@@ -27,5 +27,8 @@ npm-debug.log*
 # Prisma generated client (can be regenerated)
 server/node_modules/.prisma/
 
+# Uploaded medical records (private — never commit these)
+server/uploads/
+
 # TypeScript build info
 *.tsbuildinfo

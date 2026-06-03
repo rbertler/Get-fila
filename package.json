@@ -1,5 +1,5 @@
 {
-  "name": "clearchart",
+  "name": "fila",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
