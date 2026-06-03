@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Fila Brand Colors
+       Primary   #2b4257 — headers, logos, key brand elements
+       Secondary #6da7cc — buttons, links, interactive elements
+       Background #e3ebf2 — page backgrounds and light sections
+       Accent    #777fc5 — highlights, icons, call-to-actions
+       Neutral   #b1b4cb — borders, dividers, subtle text
+    */
+    --background: 208 37% 92%;          /* #e3ebf2 */
+    --foreground: 209 34% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 209 34% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 209 34% 12%;
+
+    --primary: 209 34% 25%;             /* #2b4257 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 208 30% 87%;
+    --secondary-foreground: 209 34% 25%;
+
+    --muted: 208 25% 87%;
+    --muted-foreground: 233 15% 48%;
+
+    --accent: 234 40% 62%;              /* #777fc5 */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 233 20% 82%;
+    --input: 233 20% 82%;
+    --ring: 203 48% 61%;                /* #6da7cc */
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* h1 — main page/welcome headers: Montserrat Bold */
+  h1 {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    font-weight: 700;
+    color: #2b4257;
+  }
+
+  /* h2–h6 — section/card headers: Montserrat Medium */
+  h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    font-weight: 500;
+    color: #2b4257;
+  }
+
+  /* Body text: Inter Regular */
+  p, li, td, th {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+  }
+
+  label, input, textarea, select {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+  }
+
+  button {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 500;
+  }
+}

@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment variables (NEVER commit these — they contain passwords and secrets)
+.env
+.env.local
+.env.production
+.env*.local
+server/.env
+client/.env
+
+# Build output
+dist/
+build/
+client/dist/
+server/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+
+# Prisma generated client (can be regenerated)
+server/node_modules/.prisma/
+
+# TypeScript build info
+*.tsbuildinfo

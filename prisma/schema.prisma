@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../server/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String                @id @default(cuid())
+  email              String                @unique
+  passwordHash       String
+  name               String
+  dateOfBirth        DateTime?
+  googleAccessToken  String?
+  googleRefreshToken String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  medicalRecords     MedicalRecord[]
+  historyEntries     MedicalHistoryEntry[]
+  appointments       Appointment[]
+  labResults         LabResult[]
+  vitals             Vital[]
+  insightReports     HealthInsightReport[]
+  shareTokens        ShareToken[]
+  providers          Provider[]
+  imagingStudies     ImagingStudy[]
+  syncIgnoreItems    SyncIgnoreItem[]
+}
+
+model Provider {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  providerType    String?
+  specialty       String?
+  affiliation     String?
+  phone           String?
+  fax             String?
+  address         String?
+  email           String?
+  website         String?
+  notes           String?
+  isManual        Boolean   @default(false)
+  isArchived      Boolean   @default(false)
+  sourceRecordIds String[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model MedicalRecord {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName      String
+  fileSize      Int
+  mimeType      String
+  storagePath   String
+  extractedText String?
+  recordType    RecordType
+  recordDate    DateTime?
+  providerName  String?
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+enum RecordType {
+  LAB_REPORT
+  VISIT_SUMMARY
+  IMAGING
+  PRESCRIPTION
+  REFERRAL
+  OPERATIVE_REPORT
+  AI_SUMMARY
+  OTHER
+}
+
+model MedicalHistoryEntry {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category       HistoryCategory
+  name           String
+  details        String?
+  relative       String?
+  startDate      DateTime?
+  endDate        DateTime?
+  sourceRecordId String?
+  isManual       Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+enum HistoryCategory {
+  CONDITION
+  MEDICATION
+  SUPPLEMENT
+  ALLERGY
+  SURGERY
+  VACCINATION
+  FAMILY_HISTORY
+}
+
+model Appointment {
+  id            String            @id @default(cuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerName  String
+  specialty     String?
+  scheduledAt   DateTime
+  duration      Int?
+  reason        String?
+  notes         String?
+  location      String?
+  googleEventId String?
+  source        AppointmentSource @default(MANUAL)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+enum AppointmentSource {
+  MANUAL
+  GOOGLE_CALENDAR
+  GMAIL
+}
+
+model LabResult {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testName       String
+  value          Float
+  unit           String
+  referenceMin   Float?
+  referenceMax   Float?
+  isFlagged      Boolean  @default(false)
+  recordedAt     DateTime
+  sourceRecordId String?
+  providerName   String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Vital {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           VitalType
+  value          Float
+  value2         Float?
+  unit           String
+  recordedAt     DateTime
+  notes          String?
+  source         String    @default("manual")
+  sourceRecordId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+enum VitalType {
+  WEIGHT
+  BLOOD_PRESSURE
+  HEART_RATE
+  TEMPERATURE
+  OXYGEN_SATURATION
+  BLOOD_GLUCOSE
+  STEPS
+  SLEEP_HOURS
+}
+
+model HealthInsightReport {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  summary     String
+  insights    Json
+  gaps        Json
+  generatedAt DateTime @default(now())
+  reportType  String   @default("general")
+  scopeLabel  String?
+}
+
+model ImagingStudy {
+  id             String           @id @default(cuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studyType      ImagingStudyType
+  bodyPart       String
+  studyDate      DateTime
+  facility       String?
+  radiologist    String?
+  providerName   String?
+  description    String?
+  summary        String
+  notes          String?
+  sourceRecordId String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+enum ImagingStudyType {
+  XRAY
+  MRI
+  CT_SCAN
+  ULTRASOUND
+  PET_SCAN
+  MAMMOGRAM
+  ECHOCARDIOGRAM
+  OTHER
+}
+
+model ShareToken {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String   @unique
+  expiresAt   DateTime
+  config      Json
+  reportPath  String?
+  createdAt   DateTime @default(now())
+  accessCount Int      @default(0)
+}
+
+/// Tracks auto-extracted items the user has explicitly deleted so sync won't re-create them.
+model SyncIgnoreItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// One of: MEDICATION | CONDITION | LAB | PROVIDER | IMAGING
+  itemType  String
+  /// Normalized lowercase key (e.g. "vyvanse 30 mg", "amanda vance")
+  itemKey   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemType, itemKey])
+}
