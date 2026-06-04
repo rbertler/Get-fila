@@ -47,6 +47,23 @@ router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   res.json({ report });
 });
 
+router.delete('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const report = await prisma.healthInsightReport.findFirst({
+      where: { id: req.params.id, userId: req.userId! },
+    });
+    if (!report) {
+      res.status(404).json({ error: 'Report not found' });
+      return;
+    }
+    await prisma.healthInsightReport.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to delete report';
+    res.status(500).json({ error: message });
+  }
+});
+
 router.post('/generate', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const reportId = await generateInsights(req.userId!);
@@ -91,6 +108,8 @@ router.get('/:id/pdf', async (req: AuthRequest, res: Response): Promise<void> =>
     const dateStr = format(new Date(report.generatedAt), 'yyyy-MM-dd');
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="health-intelligence-${dateStr}.pdf"`);
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
     res.send(pdfBuffer);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Failed to generate PDF';

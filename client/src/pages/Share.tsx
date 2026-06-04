@@ -237,7 +237,7 @@ export function Share() {
                   <option value={720}>30 days</option>
                 </select>
               </div>
-              <Button onClick={handleGenerate} disabled={generating || !hasSelection} className="gap-2 w-full text-[#2b4257] font-semibold disabled:opacity-100">
+              <Button onClick={handleGenerate} disabled={generating || !hasSelection} className="gap-2 w-full text-white font-semibold disabled:opacity-100">
                 <LinkIcon className="h-4 w-4" />
                 {generating ? 'Generating' : 'Generate share link'}
               </Button>

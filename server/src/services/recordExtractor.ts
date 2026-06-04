@@ -443,6 +443,43 @@ function cleanProviderName(raw: string): string | null {
   return name;
 }
 
+/** Extract specifically the ordering/referring provider — used as the highest-priority
+ *  provider for lab results and imaging studies. */
+export function parseOrderingProviderFromText(text: string): string | null {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  // Pattern 1: inline "Label: Value" (e.g. "Ordering Provider: Tong, MD, Scott")
+  const inlinePattern = /^(?:ordering\s+(?:provider|physician|doctor|clinician)|referring\s+(?:provider|physician|doctor)|ordered\s+by|requested\s+by|admitting\s+physician|admitting\s+provider)\s*[:\-]\s*(.+)/i;
+
+  // Pattern 2: table header followed by value on next non-empty line
+  // e.g. "ORDERING PROVIDER" or "ORDERING\nPROVIDER" as column header
+  const headerPattern = /^(?:ordering\s+(?:provider|physician)?|ordering)$/i;
+
+  for (let i = 0; i < Math.min(lines.length, 100); i++) {
+    const line = lines[i];
+
+    // Inline match
+    const m = line.match(inlinePattern);
+    if (m) {
+      const raw = m[1].split(/\s{2,}|\t/)[0].trim();
+      const cleaned = cleanProviderName(raw);
+      if (cleaned) return cleaned;
+    }
+
+    // Table header: "ORDERING PROVIDER" (whole line) → value is on the next line
+    if (headerPattern.test(line) || /^ordering\s+provider$/i.test(line)) {
+      // Look at the next 1–2 lines for the name value
+      for (let j = i + 1; j <= i + 2 && j < lines.length; j++) {
+        const next = lines[j].split(/\s{2,}|\t/)[0].trim();
+        const cleaned = cleanProviderName(next);
+        if (cleaned) return cleaned;
+      }
+    }
+  }
+
+  return null;
+}
+
 export function parseProviderFromText(text: string): string | null {
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 

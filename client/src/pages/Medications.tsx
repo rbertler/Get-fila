@@ -174,7 +174,7 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
   const addEntryDropdown = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="gap-2 text-[#2b4257] font-semibold">
+        <Button className="gap-2 text-white font-semibold">
           <Plus className="h-4 w-4" />
           Add Entry
           <ChevronDown className="h-3.5 w-3.5 ml-0.5" />
@@ -326,7 +326,7 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
             </div>
             <DialogFooter className="pt-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={saving} className="text-[#2b4257] font-semibold">
+              <Button type="submit" disabled={saving} className="text-white font-semibold">
                 {saving ? 'Saving' : editing ? 'Save changes' : `Add ${entryType === 'SUPPLEMENT' ? 'supplement' : 'medication'}`}
               </Button>
             </DialogFooter>

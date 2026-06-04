@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { api } from '@/api/client';
 import { HealthInsightReport } from '@/types';
+import { toast } from '@/hooks/useToast';
 
 export interface FocusedScope {
   entryIds: string[];
@@ -29,6 +30,7 @@ export function InsightProvider({ children }: { children: ReactNode }) {
     try {
       const data = await api.post<{ report: HealthInsightReport }>('/insights/generate', {});
       setLastReport(data.report);
+      toast({ variant: 'success', title: 'Health Intelligence report is ready', description: 'Your full analysis has finished.' });
       return data.report;
     } catch (err: any) {
       throw new Error(err?.message ?? 'Failed to generate insights. Please try again.');
@@ -44,6 +46,7 @@ export function InsightProvider({ children }: { children: ReactNode }) {
     try {
       const data = await api.post<{ report: HealthInsightReport }>('/insights/generate/focused', scope);
       setLastReport(data.report);
+      toast({ variant: 'success', title: 'Focused Analysis report is ready', description: 'Your analysis has finished.' });
       return data.report;
     } catch (err: any) {
       throw new Error(err?.message ?? 'Failed to generate focused insights. Please try again.');

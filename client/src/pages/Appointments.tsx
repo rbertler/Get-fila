@@ -163,7 +163,7 @@ export function Appointments() {
           <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
           <p className="mt-1 text-lg text-gray-500">All your medical appointments in one place</p>
         </div>
-        <Button onClick={openNew} className="gap-2 text-[#2b4257] font-semibold"><Plus className="h-4 w-4" /> Add Appointment</Button>
+        <Button onClick={openNew} className="gap-2 text-white font-semibold"><Plus className="h-4 w-4" /> Add Appointment</Button>
       </div>
 
       {loading ? (
@@ -329,8 +329,8 @@ function AppointmentList({
           onClick={() => onDetail(a)}
           className="rounded-lg border bg-white p-4 flex items-start gap-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-150"
         >
-          <div className="rounded-lg p-2 mt-0.5 shrink-0" style={{ backgroundColor: '#e0e1f0' }}>
-            <Calendar className="h-5 w-5" style={{ color: '#5b63a8' }} />
+          <div className="rounded-lg p-2 mt-0.5 shrink-0" style={{ backgroundColor: '#daf2ef' }}>
+            <Calendar className="h-5 w-5" style={{ color: '#1a5c55' }} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -373,8 +373,8 @@ function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit 
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-start gap-3">
-            <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#e0e1f0' }}>
-              <Calendar className="h-5 w-5" style={{ color: '#5b63a8' }} />
+            <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#daf2ef' }}>
+              <Calendar className="h-5 w-5" style={{ color: '#1a5c55' }} />
             </div>
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-lg leading-snug">{a.providerName}</DialogTitle>
@@ -483,7 +483,7 @@ function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit 
 
         <div className="flex gap-2 pt-2">
           <Button variant="outline" className="flex-1" onClick={onClose}>Close</Button>
-          <Button className="flex-1 gap-2 text-[#2b4257]" onClick={() => onEdit(a)}>
+          <Button className="flex-1 gap-2 text-white" onClick={() => onEdit(a)}>
             <Pencil className="h-4 w-4" /> Edit Appointment
           </Button>
         </div>

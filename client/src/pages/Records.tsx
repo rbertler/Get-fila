@@ -437,17 +437,6 @@ export function Records() {
           <h1 className="text-3xl font-bold text-gray-900">Health Records</h1>
           <p className="mt-1 text-lg text-gray-500">Upload and manage your health documents from all providers</p>
         </div>
-        {records.length > 0 && (
-          <Button
-            variant="outline"
-            onClick={handleSync}
-            disabled={syncing}
-            className="gap-2 shrink-0"
-          >
-            <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing' : 'Sync data from records'}
-          </Button>
-        )}
       </div>
 
       {/* Upload area */}
@@ -479,7 +468,7 @@ export function Records() {
                 className="h-full rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${uploadProgress === 0 ? 8 : uploadProgress}%`,
-                  background: 'linear-gradient(to right, #6da7cc, #b1b4cb)',
+                  background: 'linear-gradient(to right, #91c5bf, #b1b4cb)',
                 }}
               />
             </div>
@@ -492,7 +481,7 @@ export function Records() {
             <p className="text-sm font-medium text-gray-600 mb-1">Ready to upload</p>
             {stagedFiles.map((f, i) => (
               <div key={i} className="flex items-center gap-3 rounded-lg border bg-gray-50 px-3 py-2">
-                <FileText className="h-4 w-4 shrink-0" style={{ color: '#2b4257' }} />
+                <FileText className="h-4 w-4 shrink-0" style={{ color: '#1a5c55' }} />
                 <span className="flex-1 text-sm text-gray-700 truncate">{f.name}</span>
                 <span className="text-xs text-gray-400 shrink-0">{(f.size / 1024 / 1024).toFixed(1)} MB</span>
                 <button
@@ -505,7 +494,7 @@ export function Records() {
               </div>
             ))}
             <div className="flex justify-end pt-1">
-              <Button onClick={handleUploadClick} className="gap-2 text-[#2b4257] font-semibold">
+              <Button onClick={handleUploadClick} className="gap-2 text-white font-semibold">
                 <Upload className="h-4 w-4" />
                 Upload {stagedFiles.length === 1 ? '1 file' : `${stagedFiles.length} files`}
               </Button>
@@ -561,9 +550,9 @@ export function Records() {
               {currentFileIndex === 0 ? 'Cancel' : 'Back'}
             </Button>
             {currentFileIndex < pendingFiles.length - 1 ? (
-              <Button onClick={handleNextFile} className="text-[#2b4257] font-semibold">Next</Button>
+              <Button onClick={handleNextFile} className="text-white font-semibold">Next</Button>
             ) : (
-              <Button onClick={handleConfirmUpload} className="text-[#2b4257] font-semibold">
+              <Button onClick={handleConfirmUpload} className="text-white font-semibold">
                 {pendingFiles.length > 1 ? `Upload ${pendingFiles.length} files` : 'Upload'}
               </Button>
             )}
@@ -652,7 +641,7 @@ export function Records() {
           </div>
           <DialogFooter className="pt-2">
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveEdit} disabled={saving} className="text-[#2b4257] font-semibold">
+            <Button onClick={handleSaveEdit} disabled={saving} className="text-white font-semibold">
               {saving ? 'Saving' : 'Save changes'}
             </Button>
           </DialogFooter>
@@ -705,7 +694,7 @@ export function Records() {
           </div>
           <DialogFooter className="pt-2">
             <Button variant="outline" onClick={() => setBulkProviderDialog(false)}>Cancel</Button>
-            <Button onClick={handleBulkAssignProvider} disabled={bulkSaving || !bulkProvider.trim()} className="text-[#2b4257] font-semibold">
+            <Button onClick={handleBulkAssignProvider} disabled={bulkSaving || !bulkProvider.trim()} className="text-white font-semibold">
               {bulkSaving ? 'Saving' : 'Assign'}
             </Button>
           </DialogFooter>
@@ -840,10 +829,10 @@ export function Records() {
               <button
                 onClick={() => openPreview(r)}
                 className="mt-0.5 rounded-lg p-2 shrink-0 transition-colors"
-                style={{ backgroundColor: '#d8dae8' }}
+                style={{ backgroundColor: '#daf2ef' }}
                 title="Preview"
               >
-                <FileText className="h-5 w-5" style={{ color: '#777fc5' }} />
+                <FileText className="h-5 w-5" style={{ color: '#1a5c55' }} />
               </button>
               <button
                 onClick={() => openPreview(r)}
@@ -974,8 +963,8 @@ export function Records() {
         <DialogContent className="max-w-[500px]">
           <DialogHeader>
             <div className="flex items-center gap-2.5">
-              <div className="rounded-lg p-2 shrink-0" style={{ backgroundColor: '#d8dae8' }}>
-                <Share2 className="h-4 w-4" style={{ color: '#777fc5' }} />
+              <div className="rounded-lg p-2 shrink-0" style={{ backgroundColor: '#daf2ef' }}>
+                <Share2 className="h-4 w-4" style={{ color: '#1a5c55' }} />
               </div>
               <div>
                 <DialogTitle>Share with Provider</DialogTitle>
@@ -1009,7 +998,7 @@ export function Records() {
               <Button
                 onClick={handleShare}
                 disabled={generating}
-                className="gap-2 text-[#2b4257] font-semibold shrink-0"
+                className="gap-2 text-white font-semibold shrink-0"
               >
                 <LinkIcon className="h-4 w-4" />
                 {generating ? 'Generating…' : 'Generate link'}

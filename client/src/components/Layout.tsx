@@ -16,7 +16,7 @@ function InsightGeneratingBanner() {
       <div className="h-2 w-full rounded-full overflow-hidden bg-gray-100">
         <div
           className="h-full rounded-full animate-[indeterminate_1.4s_ease-in-out_infinite]"
-          style={{ background: 'linear-gradient(to right, #6da7cc, #b1b4cb)' }}
+          style={{ background: 'linear-gradient(135deg, #91c5bf 0%, #6da7cc 100%)' }}
         />
       </div>
     </div>

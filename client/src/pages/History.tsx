@@ -33,7 +33,7 @@ const CATEGORY_LABELS: Record<HistoryCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<HistoryCategory, string> = {
-  CONDITION: 'bg-[#d0e6f4] border-[#6da7cc]',
+  CONDITION: 'bg-[#d0e6f4] border-[#91c5bf]',
   MEDICATION: 'bg-[#c8ddf0]/60 border-[#2b4257]/30',
   SUPPLEMENT: 'bg-[#c8ddf0]/40 border-[#2b4257]/20',
   ALLERGY: 'bg-[#e2d8eb] border-[#5c3a6e]',
@@ -44,7 +44,7 @@ const CATEGORY_COLORS: Record<HistoryCategory, string> = {
 
 // Dot color on the timeline line
 const CATEGORY_DOT: Record<HistoryCategory, string> = {
-  CONDITION: 'bg-[#6da7cc]',
+  CONDITION: 'bg-[#91c5bf]',
   MEDICATION: 'bg-[#2b4257]',
   SUPPLEMENT: 'bg-[#2b4257]',
   ALLERGY: 'bg-[#5c3a6e]',
@@ -147,14 +147,14 @@ function imagingSubtitle(study: ImagingStudy): string | null {
 }
 
 // Interpolates a dot color along the vertical line gradient
-// (fila-secondary #6da7cc → fila-neutral #b1b4cb) based on position 0→1
+// #6da7cc (top/newest) → #91c5bf (bottom/oldest)
 function gradientDotColor(index: number, total: number): string {
   const t = total <= 1 ? 0 : index / (total - 1);
-  // #6da7cc = rgb(109, 167, 204)  (fila-secondary — top/newest)
-  // #b1b4cb = rgb(177, 180, 203)  (fila-neutral   — bottom/oldest)
-  const r = Math.round(109 + (177 - 109) * t);
-  const g = Math.round(167 + (180 - 167) * t);
-  const b = Math.round(204 + (203 - 204) * t);
+  // #6da7cc = rgb(109, 167, 204)
+  // #91c5bf = rgb(145, 197, 191)
+  const r = Math.round(109 + (145 - 109) * t);
+  const g = Math.round(167 + (197 - 167) * t);
+  const b = Math.round(204 + (191 - 204) * t);
   return `rgb(${r}, ${g}, ${b})`;
 }
 
@@ -192,8 +192,8 @@ const STATUS_LABEL: Record<ResultStatus, string> = {
 
 const STATUS_STYLE: Record<ResultStatus, { cardBg: string; cardBorder: string; dot: string; color: string; valueColor: string }> = {
   abnormal:  { cardBg: 'bg-[#fde8e8]', cardBorder: 'border-[#9b2c2c]', dot: 'bg-[#9b2c2c]',   color: '#9b2c2c', valueColor: 'text-[#9b2c2c]' },
-  borderline:{ cardBg: 'bg-white',    cardBorder: 'border-gray-200',  dot: 'bg-[#777fc5]',   color: '#2b4257', valueColor: 'text-gray-900' },
-  normal:    { cardBg: 'bg-white',    cardBorder: 'border-gray-200',  dot: 'bg-[#777fc5]',   color: '#2b4257', valueColor: 'text-gray-900' },
+  borderline:{ cardBg: 'bg-white',    cardBorder: 'border-gray-200',  dot: 'bg-[#5ba8a0]',   color: '#2b4257', valueColor: 'text-gray-900' },
+  normal:    { cardBg: 'bg-white',    cardBorder: 'border-gray-200',  dot: 'bg-[#5ba8a0]',   color: '#2b4257', valueColor: 'text-gray-900' },
 };
 
 type EntryForm = {
@@ -695,13 +695,13 @@ function HealthTimeline({
     <>
       <div className="relative pl-8 space-y-0">
         {/* Continuous vertical line */}
-        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-gradient-to-b from-fila-secondary via-fila-neutral to-transparent rounded-full" />
+        <div className="absolute left-3 top-3 bottom-3 w-0.5 bg-gradient-to-b from-[#6da7cc] via-[#91c5bf] to-transparent rounded-full" />
 
         {groups.map((group) => (
           <div key={group.year}>
             {/* Year label */}
             <div className="relative flex items-center mb-4 mt-2">
-              <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-md bg-gradient-to-b from-fila-secondary to-fila-neutral shadow-sm">
+              <div className="absolute -left-[31px] top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-md bg-gradient-to-b from-[#6da7cc] to-[#91c5bf] shadow-sm">
                 <Calendar className="w-3.5 h-3.5 text-white" />
               </div>
               <span className="text-2xl font-heading font-semibold text-primary ml-2 leading-none">
@@ -800,7 +800,7 @@ function HealthTimeline({
                 if (item.kind === 'imaging') {
                   const study = item.data;
                   const imgStatus = getImagingStatus(study);
-                  const imgStyle = imgStatus ? STATUS_STYLE[imgStatus] : { cardBg: 'bg-[#d8dae8]', cardBorder: 'border-[#777fc5]', dot: 'bg-[#777fc5]', color: '#6b7280' };
+                  const imgStyle = imgStatus ? STATUS_STYLE[imgStatus] : { cardBg: 'bg-[#d8dae8]', cardBorder: 'border-[#5ba8a0]', dot: 'bg-[#5ba8a0]', color: '#6b7280' };
                   return (
                     <div key={`imaging-${study.id}`} className="relative flex items-start gap-4">
                       {/* Dot */}
@@ -1022,7 +1022,7 @@ export function History() {
       const el = document.getElementById(`condition-${scrollToConditionId}`);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.style.outline = '2px solid #6da7cc';
+        el.style.outline = '2px solid #91c5bf';
         el.style.outlineOffset = '3px';
         setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 2000);
       }
@@ -1133,7 +1133,7 @@ export function History() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="gap-2 text-[#2b4257] font-semibold">
+            <Button className="gap-2 text-white font-semibold">
               <Plus className="h-4 w-4" /> Add Entry <ChevronDown className="h-3.5 w-3.5 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
@@ -1220,7 +1220,7 @@ export function History() {
               onClick={() => switchTab(tab)}
               className={`px-4 py-2.5 text-sm font-medium -mb-px transition-colors ${
                 activeTab === tab
-                  ? 'border-b-2 border-[#6da7cc] text-[#2b4257] font-semibold'
+                  ? 'border-b-2 border-[#91c5bf] text-white font-semibold'
                   : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >

@@ -17,7 +17,7 @@ export default {
         /* Fila brand palette — direct hex utilities */
         fila: {
           primary:    '#2b4257',
-          secondary:  '#6da7cc',
+          secondary:  '#91c5bf',
           background: '#e3ebf2',
           accent:     '#777fc5',
           neutral:    '#b1b4cb',

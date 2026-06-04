@@ -34,7 +34,7 @@ export function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'linear-gradient(135deg, #6da7cc 0%, #b1b4cb 45%)' }}>
+      style={{ background: 'linear-gradient(135deg, #6da7cc 0%, #91c5bf 45%)' }}>
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <FilaLogo size="lg" variant="light" />

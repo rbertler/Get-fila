@@ -127,6 +127,7 @@ export interface Vital {
 
 export interface InsightItem {
   title: string;
+  description: string;
   confidence: 'low' | 'moderate' | 'high';
   supportingEvidence: Array<{ text: string; source: string; date: string }>;
   suggestedDiscussion: string;

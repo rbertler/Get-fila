@@ -37,7 +37,7 @@ export function Sidebar() {
   return (
     <aside
       className="flex h-screen w-64 flex-col"
-      style={{ background: 'linear-gradient(135deg, #b1b4cb 0%, #6da7cc 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #6da7cc 0%, #91c5bf 100%)' }}
     >
       {/* Logo */}
       <div className="flex items-center justify-center px-6 py-5 border-b border-[#e3ebf2]">

@@ -1,26 +1,95 @@
 /**
- * Generates a PDF document for a HealthInsightReport.
- * Used for download, share, and save-to-records flows.
+ * Generates a PDF for a HealthInsightReport matching the Fila design spec.
+ * Font: Inter · 1" margins · Brand colors
  */
 
 import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
 import { prisma } from '../utils/prisma.js';
 import type { InsightItem } from './insightGenerator.js';
 
-const DARK  = '#2b4257';
-const BLUE  = '#6da7cc';
-const MID   = '#c8ddf0';
-const GRAY  = '#666666';
-const LIGHT = '#333333';
+// ── Colors ────────────────────────────────────────────────────────────────────
+const NAVY     = '#2b4257';
+const BODY     = '#1f2937';
+const MID_GRAY = '#6b7280';
+const CITE     = '#9ca3af';
+const AMBER    = '#b45309';
+const CONF     = '#6da7cc';
+const DIVIDER  = '#e5e7eb';
+const HDR_FOOT = '#9ca3af';
 
-function sectionHeader(doc: InstanceType<typeof PDFDocument>, title: string) {
-  doc.moveDown(0.8);
-  doc.fontSize(12).font('Helvetica-Bold').fillColor(DARK).text(title.toUpperCase(), { characterSpacing: 0.8 });
-  doc.moveDown(0.15);
-  doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor(BLUE).lineWidth(1).stroke();
-  doc.moveDown(0.5);
-  doc.lineWidth(1); // reset
+// ── Layout (1" = 72pt) ────────────────────────────────────────────────────────
+const MARGIN   = 72;          // 1" all sides
+const PW       = 612;
+const PH       = 792;
+const CW       = PW - MARGIN * 2;  // 468
+
+// ── Font paths ────────────────────────────────────────────────────────────────
+const FONTS       = path.resolve(process.cwd(), 'assets/fonts');
+const FONT_REG    = path.join(FONTS, 'Inter-Regular.ttf');
+const FONT_MED    = path.join(FONTS, 'Inter-Medium.ttf');
+const FONT_SEMI   = path.join(FONTS, 'Inter-SemiBold.ttf');
+const FONT_BOLD   = path.join(FONTS, 'Inter-Bold.ttf');
+const FONT_ITALIC = path.join(FONTS, 'Inter-Italic.ttf');
+const LOGO_PATH   = path.resolve(process.cwd(), '../client/public/Fila_Gradient_Transparent.png');
+
+const hasFont = (p: string) => fs.existsSync(p);
+
+type Doc = InstanceType<typeof PDFDocument>;
+
+function registerFonts(doc: Doc) {
+  if (hasFont(FONT_REG))    doc.registerFont('Inter',          FONT_REG);
+  if (hasFont(FONT_MED))    doc.registerFont('Inter-Medium',   FONT_MED);
+  if (hasFont(FONT_SEMI))   doc.registerFont('Inter-SemiBold', FONT_SEMI);
+  if (hasFont(FONT_BOLD))   doc.registerFont('Inter-Bold',     FONT_BOLD);
+  if (hasFont(FONT_ITALIC)) doc.registerFont('Inter-Italic',   FONT_ITALIC);
 }
+
+function reg(doc: Doc)    { doc.font(hasFont(FONT_REG)    ? 'Inter'          : 'Helvetica'); }
+function med(doc: Doc)    { doc.font(hasFont(FONT_MED)    ? 'Inter-Medium'   : 'Helvetica'); }
+function semi(doc: Doc)   { doc.font(hasFont(FONT_SEMI)   ? 'Inter-SemiBold' : 'Helvetica-Bold'); }
+function bold(doc: Doc)   { doc.font(hasFont(FONT_BOLD)   ? 'Inter-Bold'     : 'Helvetica-Bold'); }
+function italic(doc: Doc) { doc.font(hasFont(FONT_ITALIC) ? 'Inter-Italic'   : 'Helvetica-Oblique'); }
+
+function sectionHeading(doc: Doc, title: string) {
+  doc.moveDown(0.9);
+  bold(doc);
+  doc.fontSize(17).fillColor(NAVY).text(title, MARGIN, doc.y, { width: CW });
+  doc.moveDown(0.55);
+}
+
+function subLabel(doc: Doc, label: string) {
+  med(doc);
+  doc.fontSize(8.5).fillColor(MID_GRAY).text(label, MARGIN, doc.y, { width: CW });
+  doc.moveDown(0.35);
+}
+
+function bulletItem(doc: Doc, text: string) {
+  reg(doc);
+  doc.fontSize(9.5).fillColor(BODY)
+    .text('•  ' + text, MARGIN, doc.y, { width: CW, lineGap: 3 });
+}
+
+function evidenceBullet(doc: Doc, text: string, source: string, date: string) {
+  reg(doc);
+  doc.fontSize(9.5).fillColor(BODY)
+    .text('•  ' + text + ' ', MARGIN, doc.y, { width: CW, continued: true, lineGap: 3 });
+  doc.fillColor(CITE).text('— ' + source + ', ' + date, { continued: false });
+  doc.fillColor(BODY);
+}
+
+/** Write text outside the content margins (header/footer) without triggering overflow. */
+function writeAbsolute(doc: Doc, text: string, x: number, y: number, opts: object) {
+  const saved = { top: doc.page.margins.top, bottom: doc.page.margins.bottom };
+  doc.page.margins.top    = 0;
+  doc.page.margins.bottom = 0;
+  doc.fontSize(8).fillColor(HDR_FOOT).text(text, x, y, opts);
+  doc.page.margins.top    = saved.top;
+  doc.page.margins.bottom = saved.bottom;
+}
+
+// ── Main export ───────────────────────────────────────────────────────────────
 
 export async function generateInsightPdf(reportId: string): Promise<Buffer> {
   const report = await prisma.healthInsightReport.findUniqueOrThrow({
@@ -28,116 +97,167 @@ export async function generateInsightPdf(reportId: string): Promise<Buffer> {
     include: { user: { select: { name: true } } },
   });
 
-  const insights = report.insights as unknown as InsightItem[];
-  const gaps     = report.gaps as unknown as string[];
+  const insights   = report.insights as unknown as InsightItem[];
+  const gaps       = report.gaps    as unknown as string[];
+  const userName   = report.user.name ?? 'Patient';
+  const reportDate = new Date(report.generatedAt).toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric',
+  });
 
-  const doc    = new PDFDocument({ margin: 50, size: 'LETTER' });
+  const doc = new PDFDocument({
+    size: 'LETTER',
+    margins: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN },
+    bufferPages: true,
+    autoFirstPage: false,
+  });
+
   const chunks: Buffer[] = [];
-  doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+  doc.on('data', (c: Buffer) => chunks.push(c));
+  let pageCount = 0;
+  doc.on('pageAdded', () => { pageCount++; });
 
   await new Promise<void>((resolve, reject) => {
     doc.on('end', resolve);
     doc.on('error', reject);
 
-    // ── Header ─────────────────────────────────────────────────────────────────
-    doc.fontSize(22).font('Helvetica-Bold').fillColor(DARK).text('Health Intelligence Report', { align: 'center' });
-    doc.moveDown(0.3);
-    doc.fontSize(11).font('Helvetica').fillColor(GRAY).text(`Patient: ${report.user.name}`, { align: 'center' });
-    doc.fontSize(10).fillColor(GRAY).text(
-      `Generated: ${new Date(report.generatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,
-      { align: 'center' }
-    );
-    doc.moveDown(0.5);
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor(DARK).lineWidth(1.5).stroke();
-    doc.lineWidth(1);
-    doc.moveDown(0.4);
+    registerFonts(doc);
 
-    // Disclaimer
-    doc.fontSize(9).font('Helvetica-Oblique').fillColor('#9b5500').text(
-      'NOTICE: This report identifies patterns in health data to support informed conversations with a healthcare provider. ' +
-      'It is not a medical diagnosis. Always consult a qualified clinician.',
-      { align: 'center' }
-    );
-    doc.moveDown(0.4);
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#dddddd').lineWidth(0.5).stroke();
-    doc.lineWidth(1);
+    // ── Page 1 ────────────────────────────────────────────────────────────────
+    doc.addPage();
 
-    // ── Summary ────────────────────────────────────────────────────────────────
-    sectionHeader(doc, 'Summary');
-    doc.fontSize(10).font('Helvetica').fillColor(LIGHT).text(report.summary, { lineGap: 3 });
+    // Logo — tight to top
+    if (fs.existsSync(LOGO_PATH)) {
+      const logoW = 90;
+      doc.image(LOGO_PATH, (PW - logoW) / 2, 30, { width: logoW });
+    }
 
-    // ── Patterns ───────────────────────────────────────────────────────────────
+    // Title — snug below logo (logo bottom ≈ 75)
+    bold(doc);
+    doc.fontSize(22).fillColor(NAVY)
+      .text('Health Intelligence Report', MARGIN, 84, { width: CW, align: 'center' });
+
+    // Set cursor just below title
+    doc.y = 118;
+
+    // NOTICE — close beneath title
+    bold(doc);
+    doc.fontSize(9).fillColor(AMBER)
+      .text('NOTICE:  ', MARGIN, doc.y, { width: CW, continued: true });
+    reg(doc);
+    doc.fontSize(9).fillColor(AMBER)
+      .text(
+        'This report identifies patterns in health data to support informed conversations ' +
+        'with a healthcare provider. It is not a medical diagnosis. ' +
+        'Always discuss findings with a qualified healthcare professional.',
+        { continued: false, lineGap: 2 }
+      );
+    doc.fillColor(BODY);
+    doc.moveDown(0.7);
+
+    // ── Summary ───────────────────────────────────────────────────────────────
+    sectionHeading(doc, 'Summary');
+    reg(doc);
+    doc.fontSize(10.5).fillColor(BODY)
+      .text(report.summary, MARGIN, doc.y, { width: CW, lineGap: 4 });
+
+    // ── Patterns Identified ───────────────────────────────────────────────────
     if (insights.length > 0) {
-      sectionHeader(doc, 'Patterns Identified');
+      sectionHeading(doc, 'Patterns Identified');
 
       for (let i = 0; i < insights.length; i++) {
         const ins = insights[i];
 
         if (i > 0) {
-          doc.moveDown(0.4);
-          doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e5e7eb').lineWidth(0.5).stroke();
+          doc.moveDown(0.6);
+          doc.moveTo(MARGIN, doc.y).lineTo(MARGIN + CW, doc.y)
+            .strokeColor(DIVIDER).lineWidth(0.5).stroke();
           doc.lineWidth(1);
-          doc.moveDown(0.4);
+          doc.moveDown(0.6);
         }
 
-        // Title + confidence
-        doc.fontSize(11).font('Helvetica-Bold').fillColor(DARK).text(ins.title);
-        doc.moveDown(0.15);
-
-        const confLabel =
-          ins.confidence === 'high'     ? 'Strong pattern'   :
-          ins.confidence === 'moderate' ? 'Possible pattern' : 'Weak signal';
-        doc.fontSize(9).font('Helvetica-Oblique').fillColor(BLUE).text(`Confidence: ${confLabel}`);
+        semi(doc);
+        doc.fontSize(12.5).fillColor(NAVY)
+          .text(ins.title, MARGIN, doc.y, { width: CW });
         doc.moveDown(0.3);
 
-        // Related conditions
-        if (ins.relatedConditions?.length > 0) {
-          doc.fontSize(8).font('Helvetica-Bold').fillColor(GRAY).text('RELATED CONDITIONS');
-          doc.moveDown(0.1);
-          doc.fontSize(9).font('Helvetica').fillColor(LIGHT)
-            .text(ins.relatedConditions.join('  ·  '), { indent: 8 });
-          doc.moveDown(0.3);
+        italic(doc);
+        doc.fontSize(9).fillColor(CONF)
+          .text('Confidence: ' + (
+            ins.confidence === 'high'     ? 'Strong pattern'   :
+            ins.confidence === 'moderate' ? 'Possible pattern' : 'Weak signal'
+          ), MARGIN, doc.y, { width: CW });
+        doc.fillColor(BODY);
+        doc.moveDown(0.6);
+
+        const description = (ins as any).description as string | undefined;
+        if (description) {
+          reg(doc);
+          doc.fontSize(10.5).fillColor(BODY)
+            .text(description, MARGIN, doc.y, { width: CW, lineGap: 3 });
+          doc.moveDown(0.55);
         }
 
-        // Supporting evidence
+        if (ins.relatedConditions?.length > 0) {
+          subLabel(doc, 'Related Conditions');
+          reg(doc);
+          doc.fontSize(9.5).fillColor(BODY)
+            .text(ins.relatedConditions.join('  ·  '), MARGIN, doc.y, { width: CW });
+          doc.moveDown(0.55);
+        }
+
         if (ins.supportingEvidence?.length > 0) {
-          doc.fontSize(8).font('Helvetica-Bold').fillColor(GRAY).text('SUPPORTING EVIDENCE');
-          doc.moveDown(0.1);
-          for (const ev of ins.supportingEvidence) {
-            doc.fontSize(9).font('Helvetica').fillColor(LIGHT)
-              .text(`• ${ev.text}`, { indent: 8, continued: true })
-              .fillColor(GRAY).text(`  — ${ev.source}, ${ev.date}`, { continued: false });
-            doc.moveDown(0.15);
+          subLabel(doc, 'Supporting Evidence');
+          for (let j = 0; j < ins.supportingEvidence.length; j++) {
+            const ev = ins.supportingEvidence[j];
+            evidenceBullet(doc, ev.text, ev.source, ev.date);
+            doc.moveDown(0.3);
           }
           doc.moveDown(0.1);
         }
       }
     }
 
-    // ── Information Gaps ───────────────────────────────────────────────────────
+    // ── Information Gaps ──────────────────────────────────────────────────────
     if (gaps.length > 0) {
-      sectionHeader(doc, 'Information Gaps');
-      for (const gap of gaps) {
-        doc.fontSize(9).font('Helvetica').fillColor(LIGHT).text(`• ${gap}`, { indent: 8, lineGap: 2 });
-        doc.moveDown(0.15);
+      sectionHeading(doc, 'Information Gaps');
+      for (let i = 0; i < gaps.length; i++) {
+        bulletItem(doc, gaps[i]);
+        doc.moveDown(0.35);
       }
     }
 
-    // ── Talking Points ─────────────────────────────────────────────────────────
+    // ── Talking Points ────────────────────────────────────────────────────────
     if (insights.length > 0) {
-      sectionHeader(doc, 'Talking Points for Your Provider');
-      for (const ins of insights) {
-        doc.fontSize(9).font('Helvetica').fillColor(LIGHT)
-          .text(`• ${ins.suggestedDiscussion}`, { indent: 8, lineGap: 2 });
-        doc.moveDown(0.2);
+      sectionHeading(doc, 'Talking Points For Your Provider');
+      for (let i = 0; i < insights.length; i++) {
+        bulletItem(doc, insights[i].suggestedDiscussion);
+        doc.moveDown(0.35);
       }
     }
 
-    // ── Footer ─────────────────────────────────────────────────────────────────
-    const footerY = doc.page.height - 40;
-    doc.fontSize(8).font('Helvetica').fillColor('#aaaaaa')
-      .text('Generated by Fila Health · Not a medical document', 50, footerY, { align: 'center', width: 495 });
+    // ── Headers + Footers ─────────────────────────────────────────────────────
+    // writeAbsolute temporarily zeros margins so explicit y never triggers overflow
+    const range = doc.bufferedPageRange();
+    for (let p = 0; p < range.count; p++) {
+      doc.switchToPage(p);
+      reg(doc);
 
+      if (p > 0) {
+        writeAbsolute(doc,
+          userName + '  ·  ' + reportDate,
+          MARGIN, 24,
+          { width: CW, align: 'right' }
+        );
+      }
+
+      writeAbsolute(doc,
+        'Generated by Fila Health  ·  Not a medical document  |  ' + (p + 1),
+        MARGIN, PH - 46,
+        { width: CW, align: 'right' }
+      );
+    }
+
+    doc.flushPages();
     doc.end();
   });
 

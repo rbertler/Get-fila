@@ -126,30 +126,38 @@ const EMPTY_FORM: ProviderForm = {
   phone: '', fax: '', address: '', email: '', website: '', notes: '',
 };
 
-/** Parse a stored name (various formats) into firstName / lastName / credential. */
+function isCredentialToken(s: string): boolean {
+  return (
+    s.length <= 12 &&
+    (/^[A-Z]{2}[A-Z\-\/]*$/.test(s) ||   // MD, NP, DO, PA, RN, CRNA, RD, RDN…
+     /^Ph[Dd]$/.test(s) ||               // PhD
+     /^Pharm[Dd]$/.test(s) ||            // PharmD
+     /^PA-C$/i.test(s) ||                // PA-C
+     /^[JS]r$/.test(s))                  // Jr, Sr
+  );
+}
+
+/** Parse a stored name (various formats) into firstName / lastName / credential.
+ *  Handles "Last, First, Cred", "Last, Cred, First", and "First Last, Cred". */
 function parseProviderName(fullName: string): { firstName: string; lastName: string; credential: string } {
   let name = fullName.replace(/^Dr\.?\s+/i, '').trim();
   let credential = '';
 
-  // Pull off trailing credential after last comma, e.g. "Vance, Amanda, MD" or "Amanda Vance, MD"
-  // A credential must look like an abbreviation: all-uppercase (MD, NP, PA, RN…)
-  // or a known mixed-case form (PhD, PharmD, Jr, Sr) — NOT a title-cased first name.
-  const lastComma = name.lastIndexOf(',');
-  if (lastComma !== -1) {
-    const after = name.slice(lastComma + 1).trim();
-    const isCredential =
-      after.length <= 12 &&
-      (/^[A-Z]{2}[A-Z\-\/]*$/.test(after) ||        // 2+ uppercase letters: MD, NP, DO, PA, RN, CRNA…
-       /^Ph[Dd]$/.test(after) ||                     // PhD
-       /^Pharm[Dd]$/.test(after) ||                  // PharmD
-       /^[JS]r$/.test(after));                       // Jr, Sr
-    if (isCredential) {
-      credential = after;
-      name = name.slice(0, lastComma).trim();
+  // Split by commas and find the credential part (scanning from end for safety)
+  const parts = name.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (parts.length >= 2) {
+    // Find the first credential part (scan from last to first, skip index 0 which is always last name)
+    for (let i = parts.length - 1; i >= 1; i--) {
+      if (isCredentialToken(parts[i])) {
+        credential = parts[i];
+        name = [...parts.slice(0, i), ...parts.slice(i + 1)].join(', ');
+        break;
+      }
     }
   }
 
-  // Now name might be "Last, First" or "First Last"
+  // Now name is "Last, First" or "First Last"
   const commaIdx = name.indexOf(',');
   if (commaIdx !== -1) {
     const last = name.slice(0, commaIdx).trim();
@@ -157,9 +165,9 @@ function parseProviderName(fullName: string): { firstName: string; lastName: str
     return { firstName: first, lastName: last, credential };
   }
 
-  const parts = name.split(/\s+/);
-  if (parts.length === 1) return { firstName: '', lastName: parts[0], credential };
-  return { firstName: parts[0], lastName: parts.slice(1).join(' '), credential };
+  const words = name.split(/\s+/);
+  if (words.length === 1) return { firstName: '', lastName: words[0], credential };
+  return { firstName: words[0], lastName: words.slice(1).join(' '), credential };
 }
 
 function assembleProviderName(firstName: string, lastName: string, credential: string): string {
@@ -437,7 +445,7 @@ export function ProviderDirectory() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={openNew} className="gap-2 text-[#2b4257] font-semibold">
+          <Button onClick={openNew} className="gap-2 text-white font-semibold">
             <Plus className="h-4 w-4" /> Add Provider
           </Button>
         </div>

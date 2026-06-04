@@ -333,7 +333,6 @@ export function Dashboard() {
           onClick={() => { setStagedFiles([]); setUploadDropOpen(true); }}
           disabled={uploading}
           className="gap-2 shrink-0 mt-1"
-          style={{ color: '#2b4257' }}
         >
           <Upload className="h-4 w-4" />
           {uploading ? 'Uploading…' : 'Upload records'}
@@ -349,7 +348,7 @@ export function Dashboard() {
           <Card
             className="border-transparent"
             style={{
-              background: 'linear-gradient(white, white) padding-box, linear-gradient(to right, #6da7cc, #b1b4cb) border-box',
+              background: 'linear-gradient(white, white) padding-box, linear-gradient(to right, #6da7cc, #91c5bf) border-box',
               border: '3px solid transparent',
             }}
           >
@@ -421,8 +420,8 @@ export function Dashboard() {
                         to={`/appointments?detail=${a.id}`}
                         className="flex items-start gap-3 py-3 border-b last:border-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
                       >
-                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#e0e1f0' }}>
-                          <Calendar className="h-3.5 w-3.5" style={{ color: '#5b63a8' }} />
+                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
+                          <Calendar className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900">{a.providerName}</p>
@@ -466,8 +465,8 @@ export function Dashboard() {
                   <div className="flex-1 overflow-y-auto space-y-0">
                     {data.medications.map((m) => (
                       <div key={m.id} className="flex items-start gap-3 py-3 border-b last:border-0">
-                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#e3ebf2' }}>
-                          <Pill className="h-3.5 w-3.5" style={{ color: '#2b4257' }} />
+                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
+                          <Pill className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900">{m.name}</p>
@@ -504,8 +503,8 @@ export function Dashboard() {
                   <div className="flex-1 overflow-y-auto space-y-0">
                     {data.conditions.map((c) => (
                       <div key={c.id} className="flex items-start gap-3 py-3 border-b last:border-0">
-                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#c8ddf0' }}>
-                          <Stethoscope className="h-3.5 w-3.5" style={{ color: '#6da7cc' }} />
+                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
+                          <Stethoscope className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900">{c.name}</p>
@@ -620,17 +619,25 @@ export function Dashboard() {
                   {(data.latestInsight.insights as InsightItem[]).length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Key Insights</p>
-                      {(data.latestInsight.insights as InsightItem[]).slice(0, 2).map((insight, i) => (
-                        <div key={i} className="flex items-start gap-2.5 rounded-lg px-3 py-2.5" style={{ background: '#e3ebf2' }}>
-                          <span className="mt-0.5 text-base leading-none" style={{ color: '#6da7cc' }}>•</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{insight.title}</p>
-                            {insight.suggestedDiscussion && (
-                              <p className="text-xs text-gray-500 mt-0.5">{insight.suggestedDiscussion}</p>
-                            )}
+                      {(data.latestInsight.insights as InsightItem[]).slice(0, 2).map((insight, i) => {
+                        const confidenceStyles: Record<string, { bg: string; text: string; dot: string }> = {
+                          high:     { bg: '#d4eeeb', text: '#2b4257', dot: '#5ba8a0' },
+                          moderate: { bg: '#d4eeeb', text: '#2b4257', dot: '#5ba8a0' },
+                          low:      { bg: '#d4eeeb', text: '#2b4257', dot: '#5ba8a0' },
+                        };
+                        const style = confidenceStyles[insight.confidence] ?? confidenceStyles.low;
+                        return (
+                          <div key={i} className="flex items-start gap-2.5 rounded-lg px-3 py-2.5" style={{ background: style.bg }}>
+                            <span className="mt-0.5 text-base leading-none" style={{ color: style.dot }}>•</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium" style={{ color: style.text }}>{insight.title}</p>
+                              {insight.suggestedDiscussion && (
+                                <p className="text-xs mt-0.5" style={{ color: style.text, opacity: 0.8 }}>{insight.suggestedDiscussion}</p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {data.latestInsight.insights.length > 2 && (
                         <Link to="/insights" className="text-sm text-primary hover:underline block text-center pt-1">
                           View {data.latestInsight.insights.length - 2} more insight{data.latestInsight.insights.length - 2 > 1 ? 's' : ''} →
@@ -673,8 +680,8 @@ export function Dashboard() {
                       onClick={() => openPreview(r)}
                       className="w-full flex items-center gap-3 rounded-lg border bg-gray-50/50 px-3 py-2.5 text-left hover:bg-blue-50/40 hover:border-blue-200 transition-colors"
                     >
-                      <div className="rounded-lg p-1.5 shrink-0" style={{ backgroundColor: '#d8dae8' }}>
-                        <FileText className="h-3.5 w-3.5" style={{ color: '#777fc5' }} />
+                      <div className="rounded-lg p-1.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
+                        <FileText className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-gray-900 truncate">{r.fileName}</p>

@@ -6,7 +6,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../utils/prisma.js';
 import { saveFile, deleteFile, getFilePath } from '../services/storage.js';
 import { extractTextFromPdf } from '../services/pdfParser.js';
-import { parseLabResultsFromText, parseConditionsFromText, parseImagingFromText, parseProviderFromText, parseProviderFromFileName, normalizeLabTestName, canonicalizeLabTestName } from '../services/recordExtractor.js';
+import { parseLabResultsFromText, parseConditionsFromText, parseImagingFromText, parseProviderFromText, parseOrderingProviderFromText, parseProviderFromFileName, normalizeLabTestName, canonicalizeLabTestName } from '../services/recordExtractor.js';
 import { extractWithAI } from '../services/aiExtractor.js';
 import { normalizeProviderKey } from './providers.js';
 import fs from 'fs';
@@ -106,6 +106,16 @@ function titleCaseProviderName(name: string): string {
  * 1. Convert "First [Middle] Last, Credential" → "Last, First [Middle], Credential"
  * 2. Title-case the result (ROBERTS, CHELSEA → Roberts, Chelsea)
  */
+function isCredentialPart(s: string): boolean {
+  const up = s.toUpperCase();
+  return (
+    UPPER_CREDENTIALS.has(up) ||
+    up in MIXED_CREDENTIALS ||
+    /^RD$|^RDN$|^PA-C$|^LCPC$|^LICSW$/i.test(s) ||
+    (/^[A-Z]{2,6}$/.test(s) && s.length <= 6)   // short all-caps abbreviation
+  );
+}
+
 function normalizeProviderName(name: string): string {
   if (!name || !name.trim()) return name;
   const parts = name.split(',').map(s => s.trim()).filter(Boolean);
@@ -114,10 +124,25 @@ function normalizeProviderName(name: string): string {
 
   let normalized: string;
   if (!firstPart.includes(' ')) {
-    // Already "Last, ..." format — keep order, just title-case
-    normalized = name;
+    // Starts with a single token — assume it's the last name.
+    // Detect "Last, Credential, First" (some EMRs put credential before first name)
+    // and reorder to "Last, First, Credential".
+    if (parts.length >= 3) {
+      // Find the credential among the remaining parts
+      const credIdx = parts.findIndex((p, i) => i > 0 && isCredentialPart(p));
+      if (credIdx !== -1) {
+        const credential = parts[credIdx];
+        const otherParts = parts.filter((_, i) => i !== credIdx && i !== 0);
+        normalized = `${firstPart}, ${otherParts.join(', ')}, ${credential}`;
+      } else {
+        normalized = name;
+      }
+    } else {
+      // "Last, First [Credential]" — keep order, just title-case
+      normalized = name;
+    }
   } else {
-    // "First [Middle] Last" format — reorder to "Last, First [Middle], Credential"
+    // "First [Middle] Last [, Credential]" format — reorder to "Last, First [Middle], Credential"
     const words = firstPart.split(/\s+/).filter(Boolean);
     const lastName = words[words.length - 1];
     const firstName = words.slice(0, -1).join(' ');
@@ -133,7 +158,7 @@ const updateSchema = z.object({
   fileName: z.string().min(1).optional(),
   recordType: z.nativeEnum(RecordType).optional(),
   recordDate: z.string().optional(),
-  providerName: z.string().optional(),
+  providerName: z.string().nullable().optional(),
   notes: z.string().optional(),
 });
 
@@ -463,10 +488,42 @@ router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
       ...(fileName !== undefined && { fileName }),
       ...(recordType !== undefined && { recordType }),
       ...(recordDate !== undefined && { recordDate: new Date(recordDate) }),
-      ...(providerName !== undefined && { providerName }),
+      ...(providerName !== undefined && { providerName: providerName ?? null }),
       ...(notes !== undefined && { notes }),
     },
   });
+
+  // Keep provider.sourceRecordIds in sync when providerName changes
+  if (providerName !== undefined) {
+    const recordId = req.params.id;
+    const userId = req.userId!;
+
+    const allProviders = await prisma.provider.findMany({ where: { userId } });
+
+    // Remove from old provider if providerName changed
+    if (existing.providerName && existing.providerName !== providerName) {
+      const oldKey = normalizeProviderKey(existing.providerName);
+      const oldProvider = allProviders.find(p => normalizeProviderKey(p.name) === oldKey);
+      if (oldProvider) {
+        await prisma.provider.update({
+          where: { id: oldProvider.id },
+          data: { sourceRecordIds: oldProvider.sourceRecordIds.filter(id => id !== recordId) },
+        });
+      }
+    }
+
+    // Add to new provider
+    if (providerName) {
+      const newKey = normalizeProviderKey(providerName);
+      const newProvider = allProviders.find(p => normalizeProviderKey(p.name) === newKey);
+      if (newProvider && !newProvider.sourceRecordIds.includes(recordId)) {
+        await prisma.provider.update({
+          where: { id: newProvider.id },
+          data: { sourceRecordIds: [...newProvider.sourceRecordIds, recordId] },
+        });
+      }
+    }
+  }
 
   res.json({ record: updated });
 });
@@ -697,6 +754,12 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
     // Normalize to "Last, First [Middle], Credential" title-case format
     if (providerName) providerName = normalizeProviderName(providerName);
 
+    // For labs and imaging entries specifically, the ordering provider in the
+    // document takes priority (it may differ from the record-level provider).
+    const rawOrderingProvider = parseOrderingProviderFromText(text);
+    const orderingProvider = rawOrderingProvider ? normalizeProviderName(rawOrderingProvider) : null;
+    const labImagingProvider = orderingProvider ?? providerName;
+
     if (providerName) {
       if (!record.providerName) {
         await prisma.medicalRecord.update({ where: { id: record.id }, data: { providerName } });
@@ -746,7 +809,7 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
               isFlagged: lab.isFlagged,
               recordedAt: isNaN(labDate.getTime()) ? effectiveDate : labDate,
               sourceRecordId: record.id,
-              providerName: providerName ?? undefined,
+              providerName: labImagingProvider ?? undefined,
             },
           });
           existingLabNames.add(key);
@@ -846,7 +909,7 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
               summary: img.summary,
               facility: img.facility,
               studyDate: isNaN(studyDate.getTime()) ? effectiveDate : studyDate,
-              providerName: providerName ?? undefined,
+              providerName: labImagingProvider ?? undefined,
               sourceRecordId: record.id,
             },
           });
@@ -889,7 +952,7 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
           data: {
             userId, testName: canonicalName, value: lab.value, unit: lab.unit,
             referenceMin: lab.referenceMin, referenceMax: lab.referenceMax, isFlagged: lab.isFlagged,
-            recordedAt: effectiveDate, sourceRecordId: record.id, providerName: providerName ?? undefined,
+            recordedAt: effectiveDate, sourceRecordId: record.id, providerName: labImagingProvider ?? undefined,
           },
         });
         existingLabNames.add(key);
@@ -926,7 +989,7 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
             data: {
               userId, studyType: imaging.studyType, bodyPart: imaging.bodyPart,
               summary: imaging.summary, facility: imaging.facility,
-              studyDate: imaging.studyDate ?? effectiveDate, providerName: providerName ?? undefined,
+              studyDate: imaging.studyDate ?? effectiveDate, providerName: labImagingProvider ?? undefined,
               sourceRecordId: record.id,
             },
           });
@@ -967,6 +1030,29 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
         where: { userId, providerName: { in: staleNames } },
         data: { providerName: provider.name },
       });
+    }
+  }
+
+  // ── Reconcile provider.sourceRecordIds from all records (including AI_SUMMARY) ─
+  const allRecordsWithProvider = await prisma.medicalRecord.findMany({
+    where: { userId, providerName: { not: null } },
+    select: { id: true, providerName: true },
+  });
+  const allProvidersForReconcile = await prisma.provider.findMany({ where: { userId } });
+  const reconcileByKey = new Map(allProvidersForReconcile.map(p => [normalizeProviderKey(p.name), p]));
+  const recordsByProviderKey = new Map<string, string[]>();
+  for (const r of allRecordsWithProvider) {
+    const key = normalizeProviderKey(r.providerName!);
+    const ids = recordsByProviderKey.get(key) ?? [];
+    ids.push(r.id);
+    recordsByProviderKey.set(key, ids);
+  }
+  for (const [key, recordIds] of recordsByProviderKey) {
+    const provider = reconcileByKey.get(key);
+    if (!provider) continue;
+    const merged = Array.from(new Set([...provider.sourceRecordIds, ...recordIds]));
+    if (merged.length !== provider.sourceRecordIds.length) {
+      await prisma.provider.update({ where: { id: provider.id }, data: { sourceRecordIds: merged } });
     }
   }
 

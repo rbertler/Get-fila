@@ -106,7 +106,7 @@ The JSON must match this exact schema:
   "recordDate": string | null,  // ISO 8601 date string (YYYY-MM-DD) of when the record was created/visit occurred, or null if not found
   "provider": {
     "name": string,           // Full name as it appears (e.g. "Jane Smith, MD")
-    "providerType": string,   // e.g. "Medical Doctor (MD)", "Nurse Practitioner (NP)"
+    "providerType": string,   // e.g. "Medical Doctor", "Nurse Practitioner", "Physician Assistant" — no abbreviations in parentheses
     "specialty": string       // e.g. "Cardiology", "Family Medicine"
   } | null,
   "labs": [
@@ -304,7 +304,7 @@ function sanitize(raw: AIExtractionResult): AIExtractionResult {
     provider: raw.provider?.name
       ? {
           name: String(raw.provider.name).trim(),
-          providerType: raw.provider.providerType ? String(raw.provider.providerType).trim() : undefined,
+          providerType: raw.provider.providerType ? String(raw.provider.providerType).trim().replace(/\s*\([^)]*\)\s*$/, '') : undefined,
           specialty: raw.provider.specialty ? String(raw.provider.specialty).trim() : undefined,
         }
       : null,

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Brain, Clock, AlertCircle, Lightbulb, BookOpen, Download, Share2, FileText, Copy, Check, X, SlidersHorizontal, ChevronDown, ChevronRight } from 'lucide-react';
+import { Brain, Clock, AlertCircle, Lightbulb, BookOpen, Download, Share2, FileText, Copy, Check, X, SlidersHorizontal, ChevronDown, ChevronRight, Search, Trash2 } from 'lucide-react';
 import { useInsight, FocusedScope } from '@/context/InsightContext';
 import { api } from '@/api/client';
 import { HealthInsightReport, InsightItem, MedicalHistoryEntry, LabResult, ImagingStudy } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SkeletonList } from '@/components/SkeletonCard';
 import { EmptyState } from '@/components/EmptyState';
 import { toast } from '@/hooks/useToast';
@@ -56,23 +56,37 @@ function ReportCard({ report }: { report: HealthInsightReport }) {
                   <Lightbulb className="h-4 w-4 text-amber-500 mt-1 shrink-0" />
                   <div>
                     <p className="text-base font-semibold text-gray-900 leading-snug">{insight.title}</p>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <div className="mt-1.5">
                       <Badge variant="outline" style={{ ...CONFIDENCE_STYLES[insight.confidence], border: 'none' }}>
                         {CONFIDENCE_LABELS[insight.confidence]}
                       </Badge>
-                      {insight.relatedConditions.slice(0, 2).map((c) => (
-                        <span key={c} className="flex items-center gap-x-3">
-                          <span className="h-1 w-1 rounded-full bg-gray-300 shrink-0" />
-                          <span className="text-sm text-gray-500">{c}</span>
-                        </span>
-                      ))}
                     </div>
                   </div>
                 </div>
 
+                {/* Description */}
+                {insight.description && (
+                  <p className="text-sm text-gray-700 leading-relaxed mb-3 pl-6">{insight.description}</p>
+                )}
+
+                {/* Related Conditions */}
+                {insight.relatedConditions.length > 0 && (
+                  <div className="mb-3 pl-6">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Related Conditions</p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {insight.relatedConditions.map((c, idx) => (
+                        <span key={c} className="flex items-center gap-x-3">
+                          {idx > 0 && <span className="h-1 w-1 rounded-full bg-gray-300 shrink-0" />}
+                          <span className="text-sm text-gray-600">{c}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Supporting Evidence */}
                 {insight.supportingEvidence.length > 0 && (
-                  <div className="mb-3 pl-6">
+                  <div className="pl-6">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Supporting Evidence</p>
                     <ul className="space-y-1">
                       {insight.supportingEvidence.map((e, j) => (
@@ -82,21 +96,6 @@ function ReportCard({ report }: { report: HealthInsightReport }) {
                         </li>
                       ))}
                     </ul>
-                  </div>
-                )}
-
-                {/* Worth Being Aware Of */}
-                {insight.relatedConditions.length > 0 && (
-                  <div className="pl-6">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Worth Being Aware Of</p>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      {insight.relatedConditions.map((c, idx) => (
-                        <span key={c} className="flex items-center gap-x-3">
-                          {idx > 0 && <span className="h-1 w-1 rounded-full bg-gray-300 shrink-0" />}
-                          <span className="text-sm text-gray-600">{c}</span>
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 )}
               </div>
@@ -208,6 +207,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
   const [selectedLabs, setSelectedLabs] = useState<Set<string>>(new Set());
   const [selectedImaging, setSelectedImaging] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['history', 'labs', 'imaging']));
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -243,8 +243,13 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
     ALLERGY: 'Allergy', SURGERY: 'Surgery', VACCINATION: 'Vaccination',
   };
 
+  const searchLower = search.toLowerCase();
+  const filteredEntries = search ? entries.filter(e => e.name.toLowerCase().includes(searchLower)) : entries;
+  const filteredLabs = search ? labs.filter(l => l.testName.toLowerCase().includes(searchLower)) : labs;
+  const filteredImaging = search ? imaging.filter(s => (s.description ?? `${s.studyType} – ${s.bodyPart}`).toLowerCase().includes(searchLower)) : imaging;
+
   const entriesByCategory: Record<string, MedicalHistoryEntry[]> = {};
-  for (const e of entries) (entriesByCategory[e.category] ??= []).push(e);
+  for (const e of filteredEntries) (entriesByCategory[e.category] ??= []).push(e);
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -254,8 +259,21 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
             <SlidersHorizontal className="h-4 w-4" style={{ color: '#6da7cc' }} />
             Focused Analysis
           </DialogTitle>
-          <p className="text-sm text-gray-500 mt-0.5">Select specific items to analyze. No restrictions on how often you can run this.</p>
+          <p className="text-sm text-gray-500 mt-0.5">Select the specific entries to analyze.</p>
         </DialogHeader>
+
+        {!loadingData && (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search conditions, labs, imaging"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6da7cc]/40"
+            />
+          </div>
+        )}
 
         {loadingData ? (
           <div className="flex-1 flex items-center justify-center py-8">
@@ -265,11 +283,11 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
           <div className="flex-1 overflow-y-auto space-y-3 pr-1">
 
             {/* Health History */}
-            {entries.length > 0 && (
-              <div className="rounded-lg border overflow-hidden">
+            {filteredEntries.length > 0 && (
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
                 <button
                   onClick={() => toggleSection('history')}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-sm font-semibold text-gray-700">Health History</span>
                   <div className="flex items-center gap-2">
@@ -278,12 +296,12 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                   </div>
                 </button>
                 {expanded.has('history') && (
-                  <div className="divide-y divide-gray-50">
+                  <div className="divide-y divide-gray-100">
                     {Object.entries(entriesByCategory).map(([cat, items]) => (
                       <div key={cat}>
-                        <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide bg-white">{CATEGORY_LABELS[cat] ?? cat}</p>
+                        <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide bg-gray-50">{CATEGORY_LABELS[cat] ?? cat}</p>
                         {items.map(e => (
-                          <label key={e.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer">
+                          <label key={e.id} className="flex items-center gap-3 px-4 py-2.5 bg-white hover:bg-blue-50/40 cursor-pointer transition-colors">
                             <input type="checkbox" checked={selectedEntries.has(e.id)} onChange={() => toggleEntry(e.id)} className="h-4 w-4 rounded accent-[#2b4257]" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-gray-900">{e.name}</p>
@@ -299,11 +317,11 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
             )}
 
             {/* Lab Tests */}
-            {labs.length > 0 && (
-              <div className="rounded-lg border overflow-hidden">
+            {filteredLabs.length > 0 && (
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
                 <button
                   onClick={() => toggleSection('labs')}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-sm font-semibold text-gray-700">Lab Tests</span>
                   <div className="flex items-center gap-2">
@@ -312,9 +330,9 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                   </div>
                 </button>
                 {expanded.has('labs') && (
-                  <div className="divide-y divide-gray-50">
-                    {labs.map(l => (
-                      <label key={l.testName} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer">
+                  <div className="divide-y divide-gray-100">
+                    {filteredLabs.map(l => (
+                      <label key={l.testName} className="flex items-center gap-3 px-4 py-2.5 bg-white hover:bg-blue-50/40 cursor-pointer transition-colors">
                         <input type="checkbox" checked={selectedLabs.has(l.testName)} onChange={() => toggleLab(l.testName)} className="h-4 w-4 rounded accent-[#2b4257]" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-900">{l.testName}</p>
@@ -328,11 +346,11 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
             )}
 
             {/* Imaging */}
-            {imaging.length > 0 && (
-              <div className="rounded-lg border overflow-hidden">
+            {filteredImaging.length > 0 && (
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
                 <button
                   onClick={() => toggleSection('imaging')}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-sm font-semibold text-gray-700">Imaging Studies</span>
                   <div className="flex items-center gap-2">
@@ -341,9 +359,9 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                   </div>
                 </button>
                 {expanded.has('imaging') && (
-                  <div className="divide-y divide-gray-50">
-                    {imaging.map(s => (
-                      <label key={s.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer">
+                  <div className="divide-y divide-gray-100">
+                    {filteredImaging.map(s => (
+                      <label key={s.id} className="flex items-center gap-3 px-4 py-2.5 bg-white hover:bg-blue-50/40 cursor-pointer transition-colors">
                         <input type="checkbox" checked={selectedImaging.has(s.id)} onChange={() => toggleImaging(s.id)} className="h-4 w-4 rounded accent-[#2b4257]" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-900">{s.description ?? `${s.studyType} – ${s.bodyPart}`}</p>
@@ -356,8 +374,10 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
               </div>
             )}
 
-            {entries.length === 0 && labs.length === 0 && imaging.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-6">No health data available to select.</p>
+            {filteredEntries.length === 0 && filteredLabs.length === 0 && filteredImaging.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-6">
+                {search ? `No results for "${search}"` : 'No health data available to select.'}
+              </p>
             )}
           </div>
         )}
@@ -365,7 +385,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
         <div className="flex gap-2 pt-3 border-t mt-2">
           <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button
-            className="flex-1 gap-2 text-[#2b4257]"
+            className="flex-1 gap-2 text-white"
             disabled={totalSelected === 0 || loadingData}
             onClick={handleRun}
           >
@@ -389,6 +409,8 @@ export function HealthIntelligence() {
   const [savingToRecords, setSavingToRecords] = useState(false);
   const [savedReportIds, setSavedReportIds] = useState<Set<string>>(new Set());
   const [focusedDialogOpen, setFocusedDialogOpen] = useState(false);
+  const [deletingReportId, setDeletingReportId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const { generating, lastReport, generate, generateFocused, clearLastReport } = useInsight();
 
   useEffect(() => {
@@ -460,6 +482,22 @@ export function HealthIntelligence() {
     }
   };
 
+  const handleDeleteReport = async (report: HealthInsightReport) => {
+    setDeletingReportId(report.id);
+    try {
+      await api.delete(`/insights/${report.id}`);
+      const remaining = reports.filter((r) => r.id !== report.id);
+      setReports(remaining);
+      if (selected?.id === report.id) setSelected(remaining[0] ?? null);
+      if (report.reportType === 'general') setCanGenerate(true);
+      toast({ title: 'Report deleted' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Delete failed', description: 'Could not delete the report. Please try again.' });
+    } finally {
+      setDeletingReportId(null);
+    }
+  };
+
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6 flex items-start justify-between gap-4">
@@ -469,10 +507,10 @@ export function HealthIntelligence() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => setFocusedDialogOpen(true)}
             disabled={generating}
-            className="gap-2 text-[#2b4257]"
+            className="gap-2"
           >
             <SlidersHorizontal className="h-4 w-4" />
             Focused Analysis
@@ -481,7 +519,7 @@ export function HealthIntelligence() {
             onClick={handleGenerate}
             disabled={generating || !canGenerate}
             title={!canGenerate ? 'Add new records before generating a new report' : undefined}
-            className="gap-2 text-[#2b4257]"
+            className="gap-2 text-white"
           >
             <Brain className="h-4 w-4" />
             {generating ? 'Analyzing' : canGenerate ? 'Full Analysis' : 'Up to Date'}
@@ -491,9 +529,9 @@ export function HealthIntelligence() {
 
       {/* Disclaimer */}
       <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
-        <p className="text-base text-amber-800">
-          <strong>These insights are not a diagnosis.</strong> They identify patterns in your data to help you have more informed conversations with your healthcare provider. Always discuss findings with a qualified doctor.
+        <AlertCircle className="h-5 w-5 text-amber-900 mt-0.5 shrink-0" />
+        <p className="text-base text-amber-900">
+          <strong>These insights are not a diagnosis.</strong> They identify patterns in your data to help you have more informed conversations with your healthcare provider. Always discuss findings with a qualified healthcare professional.
         </p>
       </div>
 
@@ -506,22 +544,25 @@ export function HealthIntelligence() {
           description="Once you have records, lab results, and vitals uploaded, AI analysis will identify patterns across your fragmented health data."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 lg:items-start">
-          {/* Report list */}
-          <div className="lg:col-span-1">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest h-[22px] flex items-center mb-3">Past Reports</p>
-            <div className="space-y-2">
+        <div className="space-y-6">
+          {/* Past Reports — horizontal scroll row */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Past Reports</p>
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {reports.map((r) => (
                 <button
                   key={r.id}
                   onClick={() => setSelected(r)}
-                  className={`w-full text-left rounded-lg border p-3 h-[72px] flex flex-col justify-between transition-colors ${selected?.id === r.id ? 'bg-primary/10 border-primary/30' : 'bg-white hover:bg-gray-50'}`}
+                  className={`shrink-0 text-left rounded-lg border p-3 w-44 flex flex-col justify-between transition-colors ${selected?.id === r.id ? 'bg-primary/10 border-primary/30' : 'bg-white hover:bg-gray-50'}`}
                 >
-                  <div className="flex items-center justify-between gap-1.5">
+                  <div className="flex items-center justify-between gap-1.5 mb-1.5">
                     <p className="text-sm font-medium text-gray-900 flex items-center gap-1.5 truncate">
                       <Clock className="h-3 w-3 text-gray-400 shrink-0" />
                       <span className="truncate">{format(new Date(r.generatedAt), 'MMM d, yyyy')}</span>
                     </p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-500">{(r.insights as InsightItem[]).length} insights</p>
                     <Badge
                       variant="outline"
                       className="text-xs shrink-0"
@@ -532,7 +573,6 @@ export function HealthIntelligence() {
                       {r.reportType === 'focused' ? 'Focused' : 'Full'}
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-500">{(r.insights as InsightItem[]).length} insights</p>
                 </button>
               ))}
             </div>
@@ -540,9 +580,9 @@ export function HealthIntelligence() {
 
           {/* Selected report */}
           {selected && (
-            <div className="lg:col-span-3">
+            <div>
               {/* Header row: date label + action buttons */}
-              <div className="flex items-center justify-between mb-3" style={{ minHeight: '22px' }}>
+              <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
                     {selected.reportType === 'focused' ? 'Focused Analysis · ' : ''}{format(new Date(selected.generatedAt), 'MMMM d, yyyy')}
@@ -568,12 +608,46 @@ export function HealthIntelligence() {
                     <FileText className="h-3.5 w-3.5" />
                     {savedReportIds.has(selected.id) ? 'Saved' : 'Save to Records'}
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 h-7 px-2.5 text-xs text-[#9b2c2c] border-[#9b2c2c]/30 transition-colors hover:bg-[#9b2c2c] hover:text-white hover:border-[#9b2c2c]"
+                    onClick={() => setConfirmDeleteId(selected.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete
+                  </Button>
                 </div>
               </div>
               <ReportCard report={selected} />
             </div>
           )}
         </div>
+      )}
+
+      {confirmDeleteId && (
+        <Dialog open onOpenChange={(open) => { if (!open) setConfirmDeleteId(null); }}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Delete report?</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-gray-500">This report will be permanently deleted and cannot be recovered.</p>
+            <DialogFooter className="pt-2">
+              <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
+              <Button
+                className="text-[#9b2c2c] border-[#9b2c2c] hover:bg-[#9b2c2c] hover:text-white transition-colors"
+                variant="outline"
+                disabled={deletingReportId === confirmDeleteId}
+                onClick={() => {
+                  const report = reports.find(r => r.id === confirmDeleteId);
+                  if (report) { setConfirmDeleteId(null); handleDeleteReport(report); }
+                }}
+              >
+                {deletingReportId === confirmDeleteId ? 'Deleting' : 'Yes, delete'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
 
       {shareDialogId && (

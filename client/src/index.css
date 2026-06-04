@@ -8,7 +8,7 @@
        Primary   #2b4257 — headers, logos, key brand elements
        Secondary #6da7cc — buttons, links, interactive elements
        Background #e3ebf2 — page backgrounds and light sections
-       Accent    #777fc5 — highlights, icons, call-to-actions
+       Accent    #5ba8a0 — highlights, icons, call-to-actions
        Neutral   #b1b4cb — borders, dividers, subtle text
     */
     --background: 208 37% 92%;          /* #e3ebf2 */
@@ -29,7 +29,7 @@
     --muted: 208 25% 87%;
     --muted-foreground: 233 15% 48%;
 
-    --accent: 234 40% 62%;              /* #777fc5 */
+    --accent: 176 35% 49%;              /* #5ba8a0 */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;

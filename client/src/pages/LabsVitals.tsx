@@ -477,7 +477,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
   const addEntryDropdown = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="gap-2 text-[#2b4257] font-semibold disabled:opacity-100">
+        <Button className="gap-2 text-white font-semibold disabled:opacity-100">
           <Plus className="h-4 w-4" /> Add Entry <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
