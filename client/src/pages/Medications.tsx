@@ -203,10 +203,10 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
         <SkeletonList count={4} />
       ) : (
         <Tabs defaultValue="active">
-          <TabsList className="mb-4">
-            <TabsTrigger value="active">Active ({active.length})</TabsTrigger>
-            <TabsTrigger value="inactive">Inactive ({past.length})</TabsTrigger>
-            <TabsTrigger value="all">All ({entries.length})</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-3 mb-4">
+            <TabsTrigger value="active" className="text-xs px-1">Active ({active.length})</TabsTrigger>
+            <TabsTrigger value="inactive" className="text-xs px-1">Inactive ({past.length})</TabsTrigger>
+            <TabsTrigger value="all" className="text-xs px-1">All ({entries.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="active">
@@ -363,8 +363,8 @@ function MedCard({
     <div className={`rounded-xl border bg-white p-3 flex flex-col min-h-[100px] ${past ? 'opacity-70' : ''}`}>
       <div className="flex items-start justify-between gap-2 flex-1 grow">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#e3ebf2' }}>
-            <Pill className="h-4 w-4" style={{ color: '#2b4257' }} />
+          <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#d4eeeb' }}>
+            <Pill className="h-4 w-4" style={{ color: '#1a5c55' }} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 leading-snug">{entry.name}</p>

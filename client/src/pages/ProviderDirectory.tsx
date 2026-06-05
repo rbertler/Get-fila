@@ -543,7 +543,7 @@ export function ProviderDirectory() {
         </div>
 
         {/* ── Right: detail ── */}
-        <div className={`${mobileShowDetail ? 'flex' : 'hidden'} md:flex flex-col flex-1 overflow-y-auto bg-[#e3ebf2]`}>
+        <div className={`${mobileShowDetail ? 'flex' : 'hidden'} md:flex flex-col flex-1 min-w-0 overflow-x-hidden overflow-y-auto bg-[#e3ebf2]`}>
           {!selected ? (
             <EmptyState
               icon={Users}
@@ -552,7 +552,7 @@ export function ProviderDirectory() {
               action={<Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" />Add your first provider</Button>}
             />
           ) : (
-            <div className="max-w-2xl mx-auto p-4 md:p-6 space-y-6">
+            <div className="w-full max-w-2xl mx-auto p-4 md:p-6 space-y-6">
               {/* Mobile back button */}
               <button
                 onClick={() => setMobileShowDetail(false)}

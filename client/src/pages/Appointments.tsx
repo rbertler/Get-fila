@@ -158,12 +158,12 @@ export function Appointments() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <h1 className="text-xl md:text-3xl font-bold text-gray-900">Appointments</h1>
           <p className="mt-1 text-sm md:text-lg text-gray-500">All your medical appointments in one place</p>
         </div>
-        <Button onClick={openNew} className="gap-2 text-white font-semibold shrink-0"><Plus className="h-4 w-4" /> Add Appointment</Button>
+        <Button onClick={openNew} size="sm" className="gap-1.5 text-white font-semibold shrink-0"><Plus className="h-4 w-4" /> Add</Button>
       </div>
 
       {loading ? (
@@ -177,10 +177,10 @@ export function Appointments() {
         />
       ) : (
         <Tabs defaultValue="upcoming">
-          <TabsList className="mb-4">
-            <TabsTrigger value="upcoming">Upcoming ({upcoming.length})</TabsTrigger>
-            <TabsTrigger value="past">Past ({past.length})</TabsTrigger>
-            <TabsTrigger value="all">All ({appointments.length})</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-3 mb-4">
+            <TabsTrigger value="upcoming" className="text-xs px-1">Upcoming ({upcoming.length})</TabsTrigger>
+            <TabsTrigger value="past" className="text-xs px-1">Past ({past.length})</TabsTrigger>
+            <TabsTrigger value="all" className="text-xs px-1">All ({appointments.length})</TabsTrigger>
           </TabsList>
 
           {['upcoming', 'past', 'all'].map((tab) => (
@@ -327,30 +327,30 @@ function AppointmentList({
         <div
           key={a.id}
           onClick={() => onDetail(a)}
-          className="rounded-lg border bg-white p-4 flex items-start gap-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-150"
+          className="rounded-lg border bg-white p-3 flex items-start gap-3 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-150"
         >
-          <div className="rounded-lg p-2 mt-0.5 shrink-0" style={{ backgroundColor: '#daf2ef' }}>
-            <Calendar className="h-5 w-5" style={{ color: '#1a5c55' }} />
+          <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
+            <Calendar className="h-4 w-4" style={{ color: '#1a5c55' }} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <p className="text-base font-semibold text-gray-900">{a.providerName}</p>
+            <div className="flex flex-wrap items-center gap-2 mb-0.5">
+              <p className="text-sm font-semibold text-gray-900">{a.providerName}</p>
               {a.source !== 'MANUAL' && <Badge variant="outline">{SOURCE_LABELS[a.source]}</Badge>}
             </div>
             {(displayType || displaySpecialty) && (
-              <p className="text-sm text-gray-500 mb-1">{[displayType, displaySpecialty].filter(Boolean).join(' · ')}</p>
+              <p className="text-xs text-gray-500 mb-0.5">{[displayType, displaySpecialty].filter(Boolean).join(' · ')}</p>
             )}
-            <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-              <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{format(new Date(a.scheduledAt), 'MMM d, yyyy h:mm a')}</span>
-              {a.location && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{a.location}</span>}
+            <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(a.scheduledAt), 'MMM d, yyyy h:mm a')}</span>
+              {a.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{a.location}</span>}
               {a.duration && <span>{a.duration} min</span>}
             </div>
-            {a.reason && <p className="text-base text-gray-600 mt-1">{a.reason}</p>}
-            {a.notes && <p className="text-sm text-gray-400 mt-0.5 line-clamp-1">{a.notes}</p>}
+            {a.reason && <p className="text-xs text-gray-600 mt-0.5">{a.reason}</p>}
+            {a.notes && <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{a.notes}</p>}
           </div>
-          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="icon" onClick={() => onEdit(a)}><Pencil className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(a.id)} className="text-[#9b2c2c] hover:text-[#9b2c2c]"><Trash2 className="h-4 w-4" /></Button>
+          <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="icon" onClick={() => onEdit(a)} className="h-7 w-7"><Pencil className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => onDelete(a.id)} className="h-7 w-7 text-[#9b2c2c] hover:text-[#9b2c2c]"><Trash2 className="h-3.5 w-3.5" /></Button>
           </div>
         </div>
         );

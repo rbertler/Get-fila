@@ -63,8 +63,8 @@ Open **http://localhost:5173** in your browser.
 
 | Email | Password | Description |
 |---|---|---|
-| sarah@demo.getfila.com | demo1234 | Sarah Chen — hypothyroidism, iron deficiency, improving labs |
-| marcus@demo.getfila.com | demo1234 | Marcus Johnson — type 2 diabetes, hypertension, sleep apnea |
+| sarah@demo.fila.health | demo1234 | Sarah Chen — hypothyroidism, iron deficiency, improving labs |
+| marcus@demo.fila.health | demo1234 | Marcus Johnson — type 2 diabetes, hypertension, sleep apnea |
 
 Both accounts include pre-populated records, appointments, labs, vitals, history entries, and one pre-generated insight report each.
 

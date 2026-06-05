@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, History, Brain, FileText, Users } from 'lucide-react';
+import { LayoutDashboard, Calendar, History, Brain, FileText, Users, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
   { to: '/dashboard',     icon: LayoutDashboard, label: 'Home' },
@@ -12,6 +13,8 @@ const navItems = [
 ];
 
 export function BottomNav() {
+  const { logout } = useAuth();
+
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-40 flex md:hidden border-t"
@@ -36,6 +39,13 @@ export function BottomNav() {
           )}
         </NavLink>
       ))}
+      <button
+        onClick={() => logout()}
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors text-[#2b4257]/70 hover:bg-white/20 hover:text-[#2b4257]"
+      >
+        <LogOut className="h-5 w-5 shrink-0" />
+        <span>Sign out</span>
+      </button>
     </nav>
   );
 }

@@ -5,6 +5,7 @@
       "name": "fila-client",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
+      "cwd": "/Users/rachelbertler/fila/client",
       "port": 5173
     }
   ]
