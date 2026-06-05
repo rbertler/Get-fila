@@ -98,38 +98,6 @@ async function main() {
     await prisma.appointment.create({ data: { userId: maggie.id, ...appt } });
   }
 
-  // Labs — multiple time points to show trends
-  const maggieLabs = [
-    // HbA1c trend (worsening)
-    { testName: 'HbA1c', value: 7.8, unit: '%', referenceMin: 0, referenceMax: 7.0, recordedAt: daysAgo(30), isFlagged: true, providerName: 'Dr. Chen' },
-    { testName: 'HbA1c', value: 7.5, unit: '%', referenceMin: 0, referenceMax: 7.0, recordedAt: daysAgo(120), isFlagged: true, providerName: 'Dr. Chen' },
-    { testName: 'HbA1c', value: 7.2, unit: '%', referenceMin: 0, referenceMax: 7.0, recordedAt: daysAgo(240), isFlagged: true, providerName: 'Dr. Okafor' },
-    // eGFR trend (declining)
-    { testName: 'eGFR', value: 44, unit: 'mL/min/1.73m²', referenceMin: 60, referenceMax: 120, recordedAt: daysAgo(30), isFlagged: true, providerName: 'Dr. Patel' },
-    { testName: 'eGFR', value: 48, unit: 'mL/min/1.73m²', referenceMin: 60, referenceMax: 120, recordedAt: daysAgo(120), isFlagged: true, providerName: 'Dr. Patel' },
-    { testName: 'eGFR', value: 55, unit: 'mL/min/1.73m²', referenceMin: 60, referenceMax: 120, recordedAt: daysAgo(360), isFlagged: true, providerName: 'Dr. Patel' },
-    { testName: 'eGFR', value: 62, unit: 'mL/min/1.73m²', referenceMin: 60, referenceMax: 120, recordedAt: daysAgo(540), isFlagged: false, providerName: 'Dr. Okafor' },
-    // TSH
-    { testName: 'TSH', value: 3.2, unit: 'mIU/L', referenceMin: 0.4, referenceMax: 4.0, recordedAt: daysAgo(45), isFlagged: false, providerName: 'Dr. Chen' },
-    { testName: 'TSH', value: 4.8, unit: 'mIU/L', referenceMin: 0.4, referenceMax: 4.0, recordedAt: daysAgo(240), isFlagged: true, providerName: 'Dr. Okafor' },
-    // LDL
-    { testName: 'LDL Cholesterol', value: 98, unit: 'mg/dL', referenceMin: 0, referenceMax: 100, recordedAt: daysAgo(45), isFlagged: false, providerName: 'Dr. Williams' },
-    { testName: 'LDL Cholesterol', value: 118, unit: 'mg/dL', referenceMin: 0, referenceMax: 100, recordedAt: daysAgo(300), isFlagged: true, providerName: 'Dr. Okafor' },
-    // Creatinine
-    { testName: 'Serum Creatinine', value: 1.42, unit: 'mg/dL', referenceMin: 0.5, referenceMax: 1.1, recordedAt: daysAgo(30), isFlagged: true, providerName: 'Dr. Patel' },
-    { testName: 'Serum Creatinine', value: 1.31, unit: 'mg/dL', referenceMin: 0.5, referenceMax: 1.1, recordedAt: daysAgo(120), isFlagged: true, providerName: 'Dr. Patel' },
-    // Potassium (lisinopril monitoring)
-    { testName: 'Potassium', value: 5.1, unit: 'mEq/L', referenceMin: 3.5, referenceMax: 5.0, recordedAt: daysAgo(30), isFlagged: true, providerName: 'Dr. Patel', notes: 'Borderline elevation — monitor with Lisinopril + CKD' },
-    // Urine albumin
-    { testName: 'Urine Albumin-to-Creatinine Ratio', value: 68, unit: 'mg/g', referenceMin: 0, referenceMax: 30, recordedAt: daysAgo(30), isFlagged: true, providerName: 'Dr. Patel' },
-    // Fasting glucose
-    { testName: 'Fasting Glucose', value: 162, unit: 'mg/dL', referenceMin: 70, referenceMax: 100, recordedAt: daysAgo(30), isFlagged: true, providerName: 'Dr. Chen' },
-  ];
-
-  for (const lab of maggieLabs) {
-    await prisma.labResult.create({ data: { userId: maggie.id, ...lab } });
-  }
-
   const maggieVitals = [
     { type: 'BLOOD_PRESSURE' as VitalType, value: 148, value2: 88, unit: 'mmHg', recordedAt: daysAgo(3) },
     { type: 'BLOOD_PRESSURE' as VitalType, value: 152, value2: 92, unit: 'mmHg', recordedAt: daysAgo(30) },
