@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useRef, FormEvent } from 'react';
+import { usePdfWidth } from '@/hooks/usePdfWidth';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Medications } from './Medications';
 import { LabsVitals } from './LabsVitals';
@@ -218,6 +219,7 @@ function SourceRecordCard({ record }: { record: MedicalRecord }) {
   const [open, setOpen] = useState(false);
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
+  const [pdfContainerRef, pdfWidth] = usePdfWidth(24);
 
   const handleView = () => {
     setOpen(o => !o);
@@ -258,14 +260,14 @@ function SourceRecordCard({ record }: { record: MedicalRecord }) {
               </button>
             </div>
           )}
-          <div className="overflow-auto bg-gray-100 flex justify-center p-3 max-h-96">
+          <div ref={pdfContainerRef} className="overflow-auto bg-gray-100 flex justify-center p-3 max-h-96">
             <Document
               file={`/api/records/${record.id}/view`}
               onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPage(1); }}
               loading={<div className="py-8 text-sm text-gray-400">Rendering…</div>}
               error={<div className="py-8 text-sm text-red-400">Could not render PDF.</div>}
             >
-              <Page pageNumber={page} width={440} renderTextLayer renderAnnotationLayer />
+              <Page pageNumber={page} width={pdfWidth} renderTextLayer renderAnnotationLayer />
             </Document>
           </div>
         </div>
@@ -1125,16 +1127,16 @@ export function History() {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      {/* Page header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+      {/* Page header — row 1: title + add button */}
+      <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <h1 className="text-xl md:text-3xl font-bold text-gray-900">Health History</h1>
-          <p className="mt-1 text-sm md:text-lg text-gray-500">Your complete medical background in one place</p>
+          <p className="text-sm text-gray-500">Your complete medical background in one place</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="gap-2 text-white font-semibold">
-              <Plus className="h-4 w-4" /> Add Entry <ChevronDown className="h-3.5 w-3.5 ml-0.5" />
+            <Button className="gap-1.5 text-white font-semibold shrink-0" size="sm">
+              <Plus className="h-4 w-4" /> Add <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
@@ -1154,12 +1156,12 @@ export function History() {
         </DropdownMenu>
       </div>
 
-      {/* Global search */}
-      <div className="relative mb-5" ref={searchRef}>
-        <div className="relative">
+      {/* Row 2: search + section picker side by side */}
+      <div className="flex gap-2 mb-5" ref={searchRef}>
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
           <Input
-            placeholder="Search all health history"
+            placeholder="Search history"
             value={searchQuery}
             onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
             onFocus={() => setSearchOpen(true)}
@@ -1208,35 +1210,34 @@ export function History() {
             ))}
           </div>
         )}
+        {/* Section picker — inline with search */}
+        {(() => {
+          const TAB_LABELS: Record<string, string> = { timeline: 'Timeline', conditions: 'Conditions', medications: 'Medications', 'test-results': 'Test Results', 'family-history': 'Family History' };
+          const tabs = ['timeline', 'conditions', 'medications', 'test-results', 'family-history'] as const;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1.5 h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-[#2b4257] hover:bg-gray-50 transition-colors shrink-0 whitespace-nowrap">
+                  <span>{TAB_LABELS[activeTab]}</span>
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {tabs.map((tab) => (
+                  <DropdownMenuItem
+                    key={tab}
+                    onClick={() => switchTab(tab)}
+                    className={`text-sm ${activeTab === tab ? 'font-semibold text-[#2b4257]' : 'text-gray-700'}`}
+                  >
+                    {activeTab === tab && <span className="mr-2 text-[#5ba8a0]">✓</span>}
+                    {TAB_LABELS[tab]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        })()}
       </div>
-
-      {/* Section selector */}
-      {(() => {
-        const TAB_LABELS: Record<string, string> = { timeline: 'Timeline', conditions: 'Conditions', medications: 'Medications', 'test-results': 'Test Results', 'family-history': 'Family History' };
-        const tabs = ['timeline', 'conditions', 'medications', 'test-results', 'family-history'] as const;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 mb-6 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-[#2b4257] hover:bg-gray-50 transition-colors w-full justify-between">
-                <span>{TAB_LABELS[activeTab]}</span>
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              {tabs.map((tab) => (
-                <DropdownMenuItem
-                  key={tab}
-                  onClick={() => switchTab(tab)}
-                  className={`text-sm ${activeTab === tab ? 'font-semibold text-[#2b4257]' : 'text-gray-700'}`}
-                >
-                  {activeTab === tab && <span className="mr-2 text-[#5ba8a0]">✓</span>}
-                  {TAB_LABELS[tab]}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      })()}
 
       {/* Timeline tab */}
       {activeTab === 'timeline' && (

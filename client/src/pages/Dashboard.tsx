@@ -23,6 +23,7 @@ import { SkeletonList } from '@/components/SkeletonCard';
 import { toast } from '@/hooks/useToast';
 import { format, formatDistanceToNow } from 'date-fns';
 import { RecordType } from '@/types';
+import { usePdfWidth } from '@/hooks/usePdfWidth';
 
 type FileConfig = { name: string; type: RecordType };
 
@@ -303,6 +304,7 @@ export function Dashboard() {
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [pdfContainerRef, pdfWidth] = usePdfWidth(0);
 
   const openPreview = (r: DashboardRecord) => {
     setPreviewRecord(r);
@@ -322,21 +324,22 @@ export function Dashboard() {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      <div className="mb-6 md:mb-8 flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div className="mb-6 md:mb-8">
+        <div className="flex items-start justify-between gap-3 mb-0.5">
           <h1 className="text-xl md:text-3xl font-bold text-gray-900">
             Good {getTimeOfDay()}, {userName.split(' ')[0]}!
           </h1>
-          <p className="mt-1 text-sm md:text-lg text-gray-500">Here's a summary of your health</p>
+          <Button
+            onClick={() => { setStagedFiles([]); setUploadDropOpen(true); }}
+            disabled={uploading}
+            size="sm"
+            className="gap-1.5 shrink-0"
+          >
+            <Upload className="h-4 w-4" />
+            {uploading ? 'Uploading…' : 'Upload'}
+          </Button>
         </div>
-        <Button
-          onClick={() => { setStagedFiles([]); setUploadDropOpen(true); }}
-          disabled={uploading}
-          className="gap-2 shrink-0"
-        >
-          <Upload className="h-4 w-4" />
-          {uploading ? 'Uploading…' : 'Upload records'}
-        </Button>
+        <p className="text-sm md:text-lg text-gray-500">Here's a summary of your health</p>
       </div>
 
       {loading ? (
@@ -418,20 +421,17 @@ export function Dashboard() {
                       <Link
                         key={a.id}
                         to={`/appointments?detail=${a.id}`}
-                        className="flex items-start gap-3 py-3 border-b last:border-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+                        className="flex items-start gap-3 py-3 border-b last:border-0 hover:bg-gray-50 rounded transition-colors"
                       >
                         <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
                           <Calendar className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900">{a.providerName}</p>
-                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-xs text-gray-400 flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {format(new Date(a.scheduledAt), 'MMM d, yyyy h:mm a')}
-                            </span>
-                            {a.specialty && <span className="text-xs text-gray-400">{a.specialty}</span>}
-                          </div>
+                          <p className="text-sm font-semibold text-gray-900 truncate">{a.providerName}</p>
+                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                            <Clock className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{format(new Date(a.scheduledAt), 'MMM d · h:mm a')}{a.specialty ? ` · ${a.specialty}` : ''}</span>
+                          </p>
                           {a.reason && <p className="text-xs text-gray-500 mt-0.5 truncate">{a.reason}</p>}
                         </div>
                         <ChevronRight className="h-3.5 w-3.5 text-gray-300 shrink-0 mt-1" />
@@ -678,7 +678,7 @@ export function Dashboard() {
                     <button
                       key={r.id}
                       onClick={() => openPreview(r)}
-                      className="w-full flex items-center gap-3 rounded-lg border bg-gray-50/50 px-3 py-2.5 text-left hover:bg-blue-50/40 hover:border-blue-200 transition-colors"
+                      className="w-full flex items-center gap-3 rounded-lg border bg-gray-50/50 px-3 py-2.5 text-left hover:bg-gray-50 transition-colors"
                     >
                       <div className="rounded-lg p-1.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
                         <FileText className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
@@ -803,13 +803,13 @@ export function Dashboard() {
               {previewRecord?.fileName}
             </DialogTitle>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              {previewRecord && <Badge variant="info" className="text-xs">{RECORD_TYPE_LABELS[previewRecord.recordType]}</Badge>}
+              {previewRecord && <Badge variant={RECORD_TYPE_COLORS[previewRecord.recordType]} className="text-xs">{RECORD_TYPE_LABELS[previewRecord.recordType]}</Badge>}
               {previewRecord?.providerName && <span className="text-xs text-gray-500">{previewRecord.providerName}</span>}
             </div>
           </DialogHeader>
 
           {/* PDF preview area */}
-          <div className="flex-1 overflow-auto bg-gray-100 flex justify-center min-h-0">
+          <div ref={pdfContainerRef} className="flex-1 overflow-auto bg-gray-100 flex justify-center min-h-0">
             {previewRecord && (
               <Document
                 file={`/api/records/${previewRecord.id}/view`}
@@ -819,7 +819,7 @@ export function Dashboard() {
                 error={<div className="py-12 px-6 text-sm text-red-400 text-center">{pdfError ?? 'Could not render preview.'}</div>}
                 className="py-4"
               >
-                <Page pageNumber={pageNumber} width={560} renderTextLayer renderAnnotationLayer />
+                <Page pageNumber={pageNumber} width={pdfWidth} renderTextLayer renderAnnotationLayer />
               </Document>
             )}
           </div>

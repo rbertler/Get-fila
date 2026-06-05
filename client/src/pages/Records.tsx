@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { usePdfWidth } from '@/hooks/usePdfWidth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, Download, Trash2, Calendar, Building2, Pencil, RefreshCw, X, Plus, CheckSquare, Square, ChevronLeft, ChevronRight, Eye, Share2, Link as LinkIcon, Copy, ExternalLink, Clock } from 'lucide-react';
@@ -105,6 +106,7 @@ export function Records() {
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [pdfContainerRef, pdfWidth] = usePdfWidth(0);
 
   const openPreview = (r: MedicalRecord) => {
     setPreviewRecord(r);
@@ -432,25 +434,23 @@ export function Records() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
-      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-        <div>
-          <h1 className="text-xl md:text-3xl font-bold text-gray-900">Health Records</h1>
-          <p className="mt-1 text-sm md:text-lg text-gray-500">Upload and manage your health documents from all providers</p>
-        </div>
+      <div className="mb-4">
+        <h1 className="text-xl md:text-3xl font-bold text-gray-900">Health Records</h1>
+        <p className="mt-0.5 text-sm text-gray-500">Upload and manage your health documents</p>
       </div>
 
       {/* Upload area */}
       <div className="mb-6 space-y-3">
         <div
           {...getRootProps()}
-          className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 cursor-pointer transition-colors bg-white ${
+          className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-5 cursor-pointer transition-colors bg-white ${
             isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary/50 hover:bg-gray-50'
           }`}
         >
           <input {...getInputProps()} />
-          <Upload className={`h-10 w-10 ${isDragActive ? 'text-primary' : 'text-gray-400'}`} />
+          <Upload className={`h-7 w-7 ${isDragActive ? 'text-primary' : 'text-gray-400'}`} />
           <div className="text-center">
-            <p className="text-lg font-medium text-gray-700">
+            <p className="text-sm font-medium text-gray-700">
               {isDragActive ? 'Drop files here' : 'Drop files here or click to browse'}
             </p>
             <p className="text-base text-gray-500">PDF format only, max 20 MB</p>
@@ -759,48 +759,48 @@ export function Records() {
 
           {/* Bulk action bar */}
           {selected.size > 0 && (
-            <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2.5">
-              <span className="text-sm font-medium text-gray-700">{selected.size} selected</span>
-              <div className="flex items-center gap-2 ml-2">
+            <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+              <span className="text-xs font-medium text-gray-700 shrink-0">{selected.size} selected</span>
+              <div className="flex items-center gap-1 flex-1 justify-end">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="gap-1.5 h-8"
+                  title="Assign provider"
+                  className="h-7 w-7 p-0"
                   onClick={() => { setBulkProvider(''); setAddingBulkNewProvider(false); setBulkProviderDialog(true); }}
                 >
                   <Building2 className="h-3.5 w-3.5" />
-                  Assign provider
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="gap-1.5 h-8"
+                  title="Download"
+                  className="h-7 w-7 p-0"
                   onClick={handleBulkDownload}
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Download
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="gap-1.5 h-8"
+                  title="Share"
+                  className="h-7 w-7 p-0"
                   onClick={openShareDialog}
                 >
                   <Share2 className="h-3.5 w-3.5" />
-                  Share
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="gap-1.5 h-8 text-[#9b2c2c] border-[#9b2c2c]/30 hover:bg-[#9b2c2c] hover:text-white"
+                  title="Delete"
+                  className="h-7 w-7 p-0 text-[#9b2c2c] border-[#9b2c2c]/30 hover:bg-[#9b2c2c] hover:text-white"
                   disabled={bulkSaving}
                   onClick={openBulkDeleteDialog}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Delete
                 </Button>
               </div>
-              <button onClick={clearSelection} className="ml-auto text-gray-400 hover:text-gray-600">
+              <button onClick={clearSelection} className="shrink-0 text-gray-400 hover:text-gray-600">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -815,73 +815,56 @@ export function Records() {
           {filteredRecords.map((r) => (
             <div
               key={r.id}
-              className={`flex items-start gap-4 rounded-lg border bg-white p-4 hover:shadow-sm transition-shadow ${selected.has(r.id) ? 'border-primary/40 bg-primary/5' : ''}`}
+              className={`flex items-center gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow ${selected.has(r.id) ? 'border-primary/40 bg-primary/5' : ''}`}
             >
               <button
                 onClick={() => toggleSelect(r.id)}
-                className="mt-1 shrink-0 text-gray-300 hover:text-primary transition-colors"
+                className="shrink-0 text-gray-300 hover:text-primary transition-colors"
                 title={selected.has(r.id) ? 'Deselect' : 'Select'}
               >
                 {selected.has(r.id)
-                  ? <CheckSquare className="h-4.5 w-4.5 text-primary" />
-                  : <Square className="h-4.5 w-4.5" />}
+                  ? <CheckSquare className="h-4 w-4 text-primary" />
+                  : <Square className="h-4 w-4" />}
               </button>
               <button
                 onClick={() => openPreview(r)}
-                className="mt-0.5 rounded-lg p-2 shrink-0 transition-colors"
-                style={{ backgroundColor: '#daf2ef' }}
+                className="rounded-lg p-1.5 shrink-0 transition-colors"
+                style={{ backgroundColor: '#d4eeeb' }}
                 title="Preview"
               >
-                <FileText className="h-5 w-5" style={{ color: '#1a5c55' }} />
+                <FileText className="h-4 w-4" style={{ color: '#1a5c55' }} />
               </button>
               <button
                 onClick={() => openPreview(r)}
                 className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
               >
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <p className="text-base font-semibold text-gray-900 truncate">{r.fileName}</p>
-                  <Badge variant={RECORD_TYPE_COLORS[r.recordType]}>{RECORD_TYPE_LABELS[r.recordType]}</Badge>
+                <div className="flex items-center gap-2 min-w-0 mb-0.5">
+                  <p className="text-sm font-semibold text-gray-900 truncate min-w-0">{r.fileName}</p>
+                  <Badge variant={RECORD_TYPE_COLORS[r.recordType]} className="shrink-0 text-xs">{RECORD_TYPE_LABELS[r.recordType]}</Badge>
                 </div>
-                <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                  {r.recordDate ? (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {format(new Date(r.recordDate), 'MMM d, yyyy')}
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-gray-400">
-                      <Calendar className="h-3.5 w-3.5" />
-                      No date
-                    </span>
-                  )}
+                <div className="flex items-center gap-2 text-xs text-gray-500 min-w-0">
+                  <span className="flex items-center gap-1 whitespace-nowrap shrink-0">
+                    <Calendar className="h-3 w-3 shrink-0" />
+                    {r.recordDate ? format(new Date(r.recordDate), 'MMM d, yyyy') : <span className="text-gray-400">No date</span>}
+                  </span>
                   {r.providerName && (
-                    <span className="flex items-center gap-1">
-                      <Building2 className="h-3.5 w-3.5" />
-                      {r.providerName}
+                    <span className="flex items-center gap-1 min-w-0">
+                      <Building2 className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{r.providerName}</span>
                     </span>
                   )}
                 </div>
-                {r.notes && !r.notes.startsWith('ai_insight_report_id:') && <p className="mt-1 text-sm text-gray-500 line-clamp-1">{r.notes}</p>}
               </button>
-              <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" onClick={() => openPreview(r)} title="Preview">
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => openEdit(r)} title="Edit">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDownload(r.id, r.fileName)} title="Download">
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => openDeleteDialog(r.id, r.fileName)}
-                  title="Delete"
-                  className="text-[#9b2c2c] hover:bg-[#9b2c2c] hover:text-white"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <div className="flex items-center shrink-0" onClick={e => e.stopPropagation()}>
+                <button onClick={() => openEdit(r)} title="Edit" className="p-1.5 rounded hover:bg-gray-100 transition-colors">
+                  <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                </button>
+                <button onClick={() => handleDownload(r.id, r.fileName)} title="Download" className="p-1.5 rounded hover:bg-gray-100 transition-colors">
+                  <Download className="h-3.5 w-3.5 text-gray-400" />
+                </button>
+                <button onClick={() => openDeleteDialog(r.id, r.fileName)} title="Delete" className="p-1.5 rounded hover:bg-red-50 transition-colors">
+                  <Trash2 className="h-3.5 w-3.5 text-[#9b2c2c]" />
+                </button>
               </div>
             </div>
           ))}
@@ -905,7 +888,7 @@ export function Records() {
             </div>
           </DialogHeader>
 
-          <div className="flex-1 overflow-auto bg-gray-100 flex justify-center min-h-0">
+          <div ref={pdfContainerRef} className="flex-1 overflow-auto bg-gray-100 flex justify-center min-h-0">
             {previewRecord && (
               <Document
                 file={`/api/records/${previewRecord.id}/view`}
@@ -915,7 +898,7 @@ export function Records() {
                 error={<div className="py-12 px-6 text-sm text-red-400 text-center">{pdfError ?? 'Could not render preview.'}</div>}
                 className="py-4"
               >
-                <Page pageNumber={pageNumber} width={620} renderTextLayer renderAnnotationLayer />
+                <Page pageNumber={pageNumber} width={pdfWidth} renderTextLayer renderAnnotationLayer />
               </Document>
             )}
           </div>

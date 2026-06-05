@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef, FormEvent } from 'react';
+import { usePdfWidth } from '@/hooks/usePdfWidth';
 import { Plus, Activity, AlertTriangle, Trash2, ChevronDown, Scan, X, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -102,6 +103,7 @@ function usePdfViewer(recordId: string | undefined) {
   const [open, setOpen] = useState(false);
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
+  const [pdfContainerRef, pdfWidth] = usePdfWidth(24);
 
   const handleView = () => {
     if (!recordId) return;
@@ -123,14 +125,14 @@ function usePdfViewer(recordId: string | undefined) {
           </button>
         </div>
       )}
-      <div className="overflow-auto bg-gray-100 flex justify-center p-3 max-h-96">
+      <div ref={pdfContainerRef} className="overflow-auto bg-gray-100 flex justify-center p-3 max-h-96">
         <Document
           file={`/api/records/${recordId}/view`}
           onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPage(1); }}
           loading={<div className="py-8 text-sm text-gray-400">Rendering…</div>}
           error={<div className="py-8 text-sm text-red-400">Could not render PDF.</div>}
         >
-          <Page pageNumber={page} width={440} renderTextLayer renderAnnotationLayer />
+          <Page pageNumber={page} width={pdfWidth} renderTextLayer renderAnnotationLayer />
         </Document>
       </div>
     </div>

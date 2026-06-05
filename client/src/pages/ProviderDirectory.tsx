@@ -1,4 +1,5 @@
 import { useEffect, useState, FormEvent, useRef } from 'react';
+import { usePdfWidth } from '@/hooks/usePdfWidth';
 import { useSearchParams } from 'react-router-dom';
 import {
   Users, Plus, Pencil, Trash2, Phone, Mail,
@@ -283,6 +284,7 @@ export function ProviderDirectory() {
   const [loadingRecords, setLoadingRecords] = useState(false);
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState(1);
+  const [pdfContainerRef, pdfWidth] = usePdfWidth(32);
 
   const loadLinkedRecords = async (provider: Provider) => {
     if (!provider.sourceRecordIds.length) return;
@@ -437,24 +439,21 @@ export function ProviderDirectory() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5 border-b bg-white">
-        <div>
-          <h1 className="text-xl md:text-3xl font-bold text-gray-900">Provider Directory</h1>
-          <p className="mt-0.5 text-sm md:text-base text-gray-500">
-            Your care team, compiled from records and appointments
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={openNew} className="gap-2 text-white font-semibold">
-            <Plus className="h-4 w-4" /> Add Provider
-          </Button>
-        </div>
-      </div>
-
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left: list ── */}
         <div className={`${mobileShowDetail ? 'hidden' : 'flex'} md:flex w-full md:w-80 shrink-0 flex-col border-r bg-white overflow-hidden`}>
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
+            <div>
+              <h1 className="text-xl md:text-3xl font-bold text-gray-900">Provider Directory</h1>
+              <p className="mt-0.5 text-sm md:text-base text-gray-500">
+                Your care team, compiled from records and appointments
+              </p>
+            </div>
+            <Button onClick={openNew} size="sm" className="gap-1.5 text-white font-semibold shrink-0">
+              <Plus className="h-4 w-4" /> Add
+            </Button>
+          </div>
           {/* Active / Archived tabs */}
           <div className="flex border-b">
             <button
@@ -563,21 +562,23 @@ export function ProviderDirectory() {
                 <ChevronLeft className="h-4 w-4" /> All Providers
               </button>
               {/* Title bar */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Stethoscope className="h-7 w-7 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{displayProviderName(selected.name)}</h2>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {[selected.providerType, selected.specialty].filter(Boolean).join(' · ')}
-                      {selected.isManual && <span className="ml-2 text-gray-400">· Manually added</span>}
-                      {selected.isArchived && <span className="ml-2 text-gray-400">· Archived</span>}
-                    </p>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-10 w-10 md:h-14 md:w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <Stethoscope className="h-5 w-5 md:h-7 md:w-7 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-lg md:text-2xl font-bold text-gray-900 leading-tight">{displayProviderName(selected.name)}</h2>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {[selected.providerType, selected.specialty].filter(Boolean).join(' · ')}
+                        {selected.isManual && <span className="ml-2 text-gray-400">· Manually added</span>}
+                        {selected.isArchived && <span className="ml-2 text-gray-400">· Archived</span>}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                <div className="flex gap-1 flex-wrap">
                   <Button variant="outline" size="sm" onClick={() => openEdit(selected)} className="gap-1.5">
                     <Pencil className="h-3.5 w-3.5" /> Edit
                   </Button>
@@ -748,7 +749,7 @@ export function ProviderDirectory() {
                     <div className="flex items-center justify-center h-48 text-sm text-gray-400">Loading</div>
                   )}
                   {!loadingRecords && linkedRecords[activeRecordIdx] && (
-                    <div className="overflow-auto bg-gray-100 flex justify-center p-4">
+                    <div ref={pdfContainerRef} className="overflow-auto bg-gray-100 flex justify-center p-4">
                       <Document
                         file={`/api/records/${linkedRecords[activeRecordIdx].id}/view`}
                         onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPageNumber(1); }}
@@ -757,7 +758,7 @@ export function ProviderDirectory() {
                       >
                         <Page
                           pageNumber={pageNumber}
-                          width={580}
+                          width={pdfWidth}
                           renderTextLayer
                           renderAnnotationLayer
                         />
