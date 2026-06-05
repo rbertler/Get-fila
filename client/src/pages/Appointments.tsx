@@ -203,6 +203,7 @@ export function Appointments() {
           provider={providers.find((p) => p.name === detailAppt.providerName) ?? null}
           onClose={() => setDetailAppt(null)}
           onEdit={(a) => { setDetailAppt(null); openEdit(a); }}
+          onDelete={(id) => { setDetailAppt(null); handleDelete(id); }}
         />
       )}
 
@@ -359,11 +360,12 @@ function AppointmentList({
   );
 }
 
-function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit }: {
+function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit, onDelete }: {
   appointment: Appointment;
   provider: Provider | null;
   onClose: () => void;
   onEdit: (a: Appointment) => void;
+  onDelete: (id: string) => void;
 }) {
   const SOURCE_LABELS: Record<string, string> = { MANUAL: 'Manual', GOOGLE_CALENDAR: 'Google Calendar', GMAIL: 'Gmail' };
   const isPastAppt = isPast(new Date(a.scheduledAt));
@@ -484,7 +486,14 @@ function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit 
         <div className="flex gap-2 pt-2">
           <Button variant="outline" className="flex-1" onClick={onClose}>Close</Button>
           <Button className="flex-1 gap-2 text-white" onClick={() => onEdit(a)}>
-            <Pencil className="h-4 w-4" /> Edit Appointment
+            <Pencil className="h-4 w-4" /> Edit
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-1.5 text-[#9b2c2c] border-[#9b2c2c]/30 hover:bg-[#9b2c2c] hover:text-white"
+            onClick={() => onDelete(a.id)}
+          >
+            <Trash2 className="h-4 w-4" /> Delete
           </Button>
         </div>
       </DialogContent>
