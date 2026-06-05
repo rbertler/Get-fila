@@ -6,10 +6,26 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
-  // Remove old demo accounts
-  for (const email of ['sarah@demo.fila.health', 'marcus@demo.fila.health']) {
+  // Remove old demo accounts and wipe related data for current ones (idempotent)
+  const allDemoEmails = [
+    'sarah@demo.fila.health', 'marcus@demo.fila.health',
+    'maggie@demo.fila.health', 'jordan@demo.fila.health', 'derek@demo.fila.health',
+  ];
+  for (const email of allDemoEmails) {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (user) await prisma.user.delete({ where: { id: user.id } });
+    if (!user) continue;
+    const uid = user.id;
+    await prisma.medicalHistoryEntry.deleteMany({ where: { userId: uid } });
+    await prisma.appointment.deleteMany({ where: { userId: uid } });
+    await prisma.labResult.deleteMany({ where: { userId: uid } });
+    await prisma.vital.deleteMany({ where: { userId: uid } });
+    await prisma.provider.deleteMany({ where: { userId: uid } });
+    await prisma.healthInsightReport.deleteMany({ where: { userId: uid } });
+    await prisma.imagingStudy.deleteMany({ where: { userId: uid } });
+    // Delete old accounts (Sarah, Marcus) entirely
+    if (['sarah@demo.fila.health', 'marcus@demo.fila.health'].includes(email)) {
+      await prisma.user.delete({ where: { id: uid } });
+    }
   }
 
   const now = new Date();
