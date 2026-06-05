@@ -34,13 +34,13 @@ const CATEGORY_LABELS: Record<HistoryCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<HistoryCategory, string> = {
-  CONDITION: 'bg-[#d0e6f4] border-[#91c5bf]',
-  MEDICATION: 'bg-[#c8ddf0]/60 border-[#2b4257]/30',
-  SUPPLEMENT: 'bg-[#c8ddf0]/40 border-[#2b4257]/20',
-  ALLERGY: 'bg-[#e2d8eb] border-[#5c3a6e]',
-  SURGERY: 'bg-[#d0d1e7] border-[#232861]',
-  VACCINATION: 'bg-[#f0e4f0] border-[#9c4221]',
-  FAMILY_HISTORY: 'bg-[#e8e9ed] border-[#4a4e5a]',
+  CONDITION:      'bg-[#f5fafd] border-[#6da7cc]/25',
+  MEDICATION:     'bg-[#f4faf9] border-[#5ba8a0]/25',
+  SUPPLEMENT:     'bg-[#f5f8fc] border-[#6da7cc]/20',
+  ALLERGY:        'bg-[#fff9f9] border-[#9b2c2c]/20',
+  SURGERY:        'bg-[#f4faf9] border-[#1a5c55]/20',
+  VACCINATION:    'bg-[#f5fafd] border-[#6da7cc]/20',
+  FAMILY_HISTORY: 'bg-[#f6f8fa] border-[#2b4257]/15',
 };
 
 // Dot color on the timeline line

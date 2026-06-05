@@ -461,14 +461,14 @@ export function Records() {
         {uploading && (
           <div className="rounded-xl border bg-white px-4 py-3 space-y-2">
             <p className="text-sm font-medium text-center" style={{ color: '#2b4257' }}>
-              Uploading and extracting text…
+              Uploading and extracting text
             </p>
             <div className="h-2 w-full rounded-full overflow-hidden bg-gray-100">
               <div
                 className="h-full rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${uploadProgress === 0 ? 8 : uploadProgress}%`,
-                  background: 'linear-gradient(to right, #91c5bf, #b1b4cb)',
+                  background: 'linear-gradient(135deg, #6da7cc 0%, #91c5bf 100%)',
                 }}
               />
             </div>
