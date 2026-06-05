@@ -63,10 +63,11 @@ Open **http://localhost:5173** in your browser.
 
 | Email | Password | Description |
 |---|---|---|
-| sarah@demo.fila.health | demo1234 | Sarah Chen — hypothyroidism, iron deficiency, improving labs |
-| marcus@demo.fila.health | demo1234 | Marcus Johnson — type 2 diabetes, hypertension, sleep apnea |
+| maggie@demo.fila.health | demo1234 | Margaret Reyes, 65 — T2DM, CKD Stage 3a, 5 providers across 3 health systems |
+| jordan@demo.fila.health | demo1234 | Jordan Lee, 33 — fibromyalgia, suspected MCAS/POTS, 4-year diagnostic odyssey |
+| derek@demo.fila.health | demo1234 | Derek Kim, 41 — no diagnoses, wearables + annual Function Health panels |
 
-Both accounts include pre-populated records, appointments, labs, vitals, history entries, and one pre-generated insight report each.
+All accounts include pre-populated history, appointments, labs, vitals, providers, and a pre-generated Health Intelligence report.
 
 ## Google Calendar & Gmail Integration (Optional)
 
