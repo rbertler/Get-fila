@@ -39,14 +39,14 @@ function ReportCard({ report }: { report: HealthInsightReport }) {
     <div className="rounded-xl border bg-white divide-y divide-gray-100">
 
       {/* Summary */}
-      <div className="px-6 py-5">
+      <div className="px-4 md:px-6 py-4 md:py-5">
         <SectionLabel>Summary</SectionLabel>
         <p className="text-base text-gray-700 leading-relaxed">{report.summary}</p>
       </div>
 
       {/* Patterns */}
       {insights.length > 0 && (
-        <div className="px-6 py-5">
+        <div className="px-4 md:px-6 py-4 md:py-5">
           <SectionLabel>Patterns</SectionLabel>
           <div className="space-y-6">
             {insights.map((insight, i) => (
@@ -106,7 +106,7 @@ function ReportCard({ report }: { report: HealthInsightReport }) {
 
       {/* Information Gaps */}
       {gaps.length > 0 && (
-        <div className="px-6 py-5">
+        <div className="px-4 md:px-6 py-4 md:py-5">
           <SectionLabel>Information Gaps</SectionLabel>
           <ul className="space-y-2">
             {gaps.map((gap, i) => (
@@ -121,7 +121,7 @@ function ReportCard({ report }: { report: HealthInsightReport }) {
 
       {/* Talking Points for Provider */}
       {insights.length > 0 && (
-        <div className="px-6 py-5">
+        <div className="px-4 md:px-6 py-4 md:py-5">
           <SectionLabel>Talking Points for Provider</SectionLabel>
           <div className="rounded-lg border overflow-hidden" style={{ background: '#c8ddf0', borderColor: '#2b4257' }}>
             {insights.map((insight, i) => (
@@ -499,11 +499,11 @@ export function HealthIntelligence() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Health Intelligence</h1>
-          <p className="mt-1 text-lg text-gray-500">Pattern analysis across all your health records</p>
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900">Health Intelligence</h1>
+          <p className="mt-1 text-sm md:text-lg text-gray-500">Pattern analysis across all your health records</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Button

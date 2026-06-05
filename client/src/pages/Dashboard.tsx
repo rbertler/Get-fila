@@ -321,18 +321,18 @@ export function Dashboard() {
   const actionItems = data ? buildActionItems(data) : [];
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-8 flex items-start justify-between gap-4">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
+      <div className="mb-6 md:mb-8 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900">
             Good {getTimeOfDay()}, {userName.split(' ')[0]}!
           </h1>
-          <p className="mt-1 text-lg text-gray-500">Here's a summary of your health</p>
+          <p className="mt-1 text-sm md:text-lg text-gray-500">Here's a summary of your health</p>
         </div>
         <Button
           onClick={() => { setStagedFiles([]); setUploadDropOpen(true); }}
           disabled={uploading}
-          className="gap-2 shrink-0 mt-1"
+          className="gap-2 shrink-0"
         >
           <Upload className="h-4 w-4" />
           {uploading ? 'Uploading…' : 'Upload records'}
@@ -353,7 +353,7 @@ export function Dashboard() {
             }}
           >
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2" style={{ color: '#2b4257' }}>
+              <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0" style={{ color: '#2b4257' }}>
                 <ClipboardList className="h-5 w-5" style={{ color: '#2b4257' }} />
                 Action Items
               </CardTitle>
@@ -396,11 +396,11 @@ export function Dashboard() {
             {/* Upcoming Appointments */}
             <Card className="flex flex-col h-[300px]">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
                   <Calendar className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
                   Upcoming Appointments
                 </CardTitle>
-                <Link to="/appointments" className="text-sm text-primary hover:underline flex items-center gap-1">
+                <Link to="/appointments" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
                   View all <ArrowRight className="h-3 w-3" />
                 </Link>
               </CardHeader>
@@ -445,11 +445,11 @@ export function Dashboard() {
             {/* Active Medications */}
             <Card className="flex flex-col h-[300px]">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
                   <Pill className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
                   Active Medications
                 </CardTitle>
-                <Link to="/medications" className="text-sm text-primary hover:underline flex items-center gap-1">
+                <Link to="/medications" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
                   View all <ArrowRight className="h-3 w-3" />
                 </Link>
               </CardHeader>
@@ -486,11 +486,11 @@ export function Dashboard() {
             {/* Health Conditions */}
             <Card className="flex flex-col h-[300px]">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
                   <Stethoscope className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
                   Health Conditions
                 </CardTitle>
-                <Link to="/history" className="text-sm text-primary hover:underline flex items-center gap-1">
+                <Link to="/history" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
                   View all <ArrowRight className="h-3 w-3" />
                 </Link>
               </CardHeader>
@@ -523,11 +523,11 @@ export function Dashboard() {
             {/* Recent Test Results */}
             <Card className="flex flex-col h-[300px]">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
                   <FlaskConical className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
                   Recent Test Results
                 </CardTitle>
-                <Link to="/labs" className="text-sm text-primary hover:underline flex items-center gap-1">
+                <Link to="/labs" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
                   View all <ArrowRight className="h-3 w-3" />
                 </Link>
               </CardHeader>
@@ -578,11 +578,11 @@ export function Dashboard() {
           {/* Health Intelligence Excerpt */}
           <Card className="flex flex-col h-[300px]">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-base flex items-center gap-2" style={{ color: '#2b4257' }}>
+              <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0" style={{ color: '#2b4257' }}>
                 <Brain className="h-5 w-5" style={{ color: '#2b4257' }} />
                 Health Intelligence Report
               </CardTitle>
-              <Link to="/insights" className="text-sm text-primary hover:underline flex items-center gap-1">
+              <Link to="/insights" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
                 View all <ArrowRight className="h-3 w-3" />
               </Link>
             </CardHeader>
@@ -653,11 +653,11 @@ export function Dashboard() {
           {/* Recent Records */}
           <Card className="flex flex-col h-[300px]">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
                 <FileText className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
                 Recent Records
               </CardTitle>
-              <Link to="/records" className="text-sm text-primary hover:underline flex items-center gap-1">
+              <Link to="/records" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
                 View all <ArrowRight className="h-3 w-3" />
               </Link>
             </CardHeader>

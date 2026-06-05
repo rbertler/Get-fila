@@ -270,6 +270,7 @@ export function ProviderDirectory() {
   const [filterType, setFilterType] = useState('all');
   const [filterSpecialty, setFilterSpecialty] = useState('all');
   const [selected, setSelected] = useState<Provider | null>(null);
+  const [mobileShowDetail, setMobileShowDetail] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Provider | null>(null);
   const [form, setForm] = useState<ProviderForm>(EMPTY_FORM);
@@ -437,10 +438,10 @@ export function ProviderDirectory() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-5 border-b bg-white">
+      <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5 border-b bg-white">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Provider Directory</h1>
-          <p className="mt-0.5 text-base text-gray-500">
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900">Provider Directory</h1>
+          <p className="mt-0.5 text-sm md:text-base text-gray-500">
             Your care team, compiled from records and appointments
           </p>
         </div>
@@ -453,7 +454,7 @@ export function ProviderDirectory() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left: list ── */}
-        <div className="w-80 shrink-0 flex flex-col border-r bg-white overflow-hidden">
+        <div className={`${mobileShowDetail ? 'hidden' : 'flex'} md:flex w-full md:w-80 shrink-0 flex-col border-r bg-white overflow-hidden`}>
           {/* Active / Archived tabs */}
           <div className="flex border-b">
             <button
@@ -518,7 +519,7 @@ export function ProviderDirectory() {
               filtered.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => setSelected(p)}
+                  onClick={() => { setSelected(p); setMobileShowDetail(true); }}
                   className={`w-full text-left px-4 py-3 border-b transition-colors hover:bg-gray-50 ${selected?.id === p.id ? 'bg-primary/5 border-l-2 border-l-primary' : ''}`}
                 >
                   <div className="flex items-center">
@@ -543,7 +544,7 @@ export function ProviderDirectory() {
         </div>
 
         {/* ── Right: detail ── */}
-        <div className="flex-1 overflow-y-auto bg-[#e3ebf2]">
+        <div className={`${mobileShowDetail ? 'flex' : 'hidden'} md:flex flex-col flex-1 overflow-y-auto bg-[#e3ebf2]`}>
           {!selected ? (
             <EmptyState
               icon={Users}
@@ -552,7 +553,15 @@ export function ProviderDirectory() {
               action={<Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" />Add your first provider</Button>}
             />
           ) : (
-            <div className="max-w-2xl mx-auto p-6 space-y-6">
+            <div className="max-w-2xl mx-auto p-4 md:p-6 space-y-6">
+              {/* Mobile back button */}
+              <button
+                onClick={() => setMobileShowDetail(false)}
+                className="flex md:hidden items-center gap-1.5 text-sm font-medium mb-2"
+                style={{ color: '#2b4257' }}
+              >
+                <ChevronLeft className="h-4 w-4" /> All Providers
+              </button>
               {/* Title bar */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4">

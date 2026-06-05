@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
+import { BottomNav } from './BottomNav';
 import { useInsight } from '@/context/InsightContext';
 import { Brain } from 'lucide-react';
 
@@ -8,7 +9,7 @@ function InsightGeneratingBanner() {
   if (!generating) return null;
 
   return (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-80 rounded-xl border bg-white shadow-lg px-4 py-3 space-y-2">
+    <div className="fixed bottom-20 md:bottom-5 left-1/2 -translate-x-1/2 z-50 w-80 rounded-xl border bg-white shadow-lg px-4 py-3 space-y-2">
       <p className="text-sm font-medium flex items-center gap-2" style={{ color: '#2b4257' }}>
         <Brain className="h-4 w-4 shrink-0" style={{ color: '#6da7cc' }} />
         Analyzing your health data
@@ -27,9 +28,10 @@ export function Layout() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#e3ebf2]">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
         <Outlet />
       </main>
+      <BottomNav />
       <InsightGeneratingBanner />
     </div>
   );

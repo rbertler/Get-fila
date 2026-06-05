@@ -732,23 +732,23 @@ function HealthTimeline({
                       {/* Card */}
                       <button
                         onClick={() => setSelected(entry)}
-                        className="w-full text-left rounded-lg border border-gray-200 bg-white shadow-sm p-4 flex items-start gap-3 transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+                        className="w-full text-left rounded-lg border border-gray-200 bg-white shadow-sm p-3 flex items-start gap-3 transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
                       >
                         <div className="flex-1 min-w-0">
                           <Badge
                             variant={entry.category === 'SUPPLEMENT' ? 'medication' : CATEGORY_BADGE_VARIANTS[entry.category]}
-                            className="text-xs mb-1.5"
+                            className="text-xs mb-1"
                           >
                             {entry.category === 'SUPPLEMENT' ? 'Medication' : CATEGORY_LABELS[entry.category]}
                           </Badge>
-                          <p className="text-base font-semibold text-gray-900">
+                          <p className="text-sm font-semibold text-gray-900">
                             <span className="text-gray-500 font-normal">{verb} </span>
                             {toTitleCase(entry.name)}
                           </p>
                         </div>
                         <div className="shrink-0 text-right">
                           {item.date && (
-                            <p className="text-sm text-gray-500">{format(item.date, 'MMM d, yyyy')}</p>
+                            <p className="text-xs text-gray-500">{format(item.date, 'MMM d, yyyy')}</p>
                           )}
                         </div>
                       </button>
@@ -775,21 +775,21 @@ function HealthTimeline({
                       {/* Card */}
                       <button
                         onClick={() => setSelectedLabGroup(group)}
-                        className="w-full text-left rounded-lg border border-gray-200 bg-white p-4 flex items-start gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
+                        className="w-full text-left rounded-lg border border-gray-200 bg-white p-3 flex items-start gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
                       >
                         <div className="flex-1 min-w-0">
-                          <Badge variant="testResults" className="text-xs mb-1.5">Test Result</Badge>
-                          <p className="text-base font-semibold text-gray-900">
+                          <Badge variant="testResults" className="text-xs mb-1">Test Result</Badge>
+                          <p className="text-sm font-semibold text-gray-900">
                             Lab Tests<span className="font-normal" style={{ color: labStyle.color }}>, {STATUS_LABEL[labStatus]}</span>
                           </p>
-                          <p className="text-sm text-gray-500 mt-0.5">
+                          <p className="text-xs text-gray-500 mt-0.5">
                             {group.length} test{group.length !== 1 ? 's' : ''}
                             {provider && ` · ${provider}`}
                           </p>
                         </div>
                         <div className="shrink-0 text-right">
                           {group[0]?.recordedAt && (
-                            <p className="text-sm text-gray-500">{format(new Date(group[0].recordedAt), 'MMM d, yyyy')}</p>
+                            <p className="text-xs text-gray-500">{format(new Date(group[0].recordedAt), 'MMM d, yyyy')}</p>
                           )}
                         </div>
                       </button>
@@ -812,22 +812,22 @@ function HealthTimeline({
                       {/* Card */}
                       <button
                         onClick={() => setSelectedImaging(study)}
-                        className="w-full text-left rounded-lg border border-gray-200 bg-white p-4 flex items-start gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
+                        className="w-full text-left rounded-lg border border-gray-200 bg-white p-3 flex items-start gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
                       >
                         <div className="flex-1 min-w-0">
-                          <Badge variant="testResults" className="text-xs mb-1.5">Test Result</Badge>
-                          <p className="text-base font-semibold text-gray-900">
+                          <Badge variant="testResults" className="text-xs mb-1">Test Result</Badge>
+                          <p className="text-sm font-semibold text-gray-900">
                             {imagingTitle(study)}
                             {imgStatus && <span className="font-normal" style={{ color: imgStyle.color }}>, {STATUS_LABEL[imgStatus]}</span>}
                           </p>
                           {(imagingSubtitle(study) || study.facility || study.providerName) && (
-                            <p className="text-sm text-gray-500 mt-0.5">
+                            <p className="text-xs text-gray-500 mt-0.5">
                               {[imagingSubtitle(study), study.facility ?? study.providerName].filter(Boolean).join(' · ')}
                             </p>
                           )}
                         </div>
                         <div className="shrink-0 text-right">
-                          {study.studyDate && <p className="text-sm text-gray-500">{format(new Date(study.studyDate), 'MMM d, yyyy')}</p>}
+                          {study.studyDate && <p className="text-xs text-gray-500">{format(new Date(study.studyDate), 'MMM d, yyyy')}</p>}
                         </div>
                       </button>
                     </div>
@@ -1124,12 +1124,12 @@ export function History() {
   }, [searchQuery, entries, labs, imaging]);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
       {/* Page header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Health History</h1>
-          <p className="mt-1 text-lg text-gray-500">Your complete medical background in one place</p>
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900">Health History</h1>
+          <p className="mt-1 text-sm md:text-lg text-gray-500">Your complete medical background in one place</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -1210,25 +1210,33 @@ export function History() {
         )}
       </div>
 
-      {/* Outer tab strip */}
-      <div className="flex gap-0 border-b border-gray-200 mb-6">
-        {(['timeline', 'conditions', 'medications', 'test-results', 'family-history'] as const).map((tab) => {
-          const labels = { timeline: 'Timeline', conditions: 'Conditions', medications: 'Medications', 'test-results': 'Test Results', 'family-history': 'Family History' };
-          return (
-            <button
-              key={tab}
-              onClick={() => switchTab(tab)}
-              className={`px-4 py-2.5 text-sm font-medium -mb-px transition-colors ${
-                activeTab === tab
-                  ? 'border-b-2 border-[#91c5bf] text-white font-semibold'
-                  : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {labels[tab]}
-            </button>
-          );
-        })}
-      </div>
+      {/* Section selector */}
+      {(() => {
+        const TAB_LABELS: Record<string, string> = { timeline: 'Timeline', conditions: 'Conditions', medications: 'Medications', 'test-results': 'Test Results', 'family-history': 'Family History' };
+        const tabs = ['timeline', 'conditions', 'medications', 'test-results', 'family-history'] as const;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 mb-6 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-[#2b4257] hover:bg-gray-50 transition-colors w-full justify-between">
+                <span>{TAB_LABELS[activeTab]}</span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {tabs.map((tab) => (
+                <DropdownMenuItem
+                  key={tab}
+                  onClick={() => switchTab(tab)}
+                  className={`text-sm ${activeTab === tab ? 'font-semibold text-[#2b4257]' : 'text-gray-700'}`}
+                >
+                  {activeTab === tab && <span className="mr-2 text-[#5ba8a0]">✓</span>}
+                  {TAB_LABELS[tab]}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      })()}
 
       {/* Timeline tab */}
       {activeTab === 'timeline' && (
@@ -1281,16 +1289,16 @@ export function History() {
               <div
                 key={entry.id}
                 id={`condition-${entry.id}`}
-                className="rounded-lg border border-gray-200 bg-white shadow-sm p-4 flex items-start gap-3 transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
+                className="rounded-lg border border-gray-200 bg-white shadow-sm p-3 flex items-start gap-3 transition-all duration-150 hover:shadow-md hover:-translate-y-0.5"
               >
                 <button
                   onClick={() => setSelectedCondition(entry)}
                   className="flex-1 min-w-0 text-left"
                 >
-                  <p className="text-base font-semibold text-gray-900">{toTitleCase(entry.name)}</p>
-                  {entry.details && <p className="text-sm text-gray-500 mt-0.5">{entry.details}</p>}
+                  <p className="text-sm font-semibold text-gray-900">{toTitleCase(entry.name)}</p>
+                  {entry.details && <p className="text-xs text-gray-500 mt-0.5">{entry.details}</p>}
                   {entry.startDate && (
-                    <p className="text-xs text-gray-400 mt-1">Since {format(new Date(entry.startDate), 'MMM d, yyyy')}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Since {format(new Date(entry.startDate), 'MMM d, yyyy')}</p>
                   )}
                 </button>
                 <div className="flex items-center gap-1 shrink-0">
@@ -1356,17 +1364,17 @@ export function History() {
             familyHistory.sort(sortEntries).map(entry => (
               <div
                 key={entry.id}
-                className="rounded-lg border border-gray-200 bg-white shadow-sm p-4 flex items-start gap-3"
+                className="rounded-lg border border-gray-200 bg-white shadow-sm p-3 flex items-start gap-3"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-semibold text-gray-900">{toTitleCase(entry.name)}</p>
-                  <p className="text-sm mt-0.5">
+                  <p className="text-sm font-semibold text-gray-900">{toTitleCase(entry.name)}</p>
+                  <p className="text-xs mt-0.5">
                     <span className="text-gray-400">Relative: </span>
                     <span className="text-gray-600">{entry.relative ?? '—'}</span>
                   </p>
-                  {entry.details && <p className="text-sm text-gray-500 mt-0.5">{entry.details}</p>}
+                  {entry.details && <p className="text-xs text-gray-500 mt-0.5">{entry.details}</p>}
                   {entry.startDate && (
-                    <p className="text-xs text-gray-400 mt-1">{format(new Date(entry.startDate), 'MMM d, yyyy')}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{format(new Date(entry.startDate), 'MMM d, yyyy')}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">

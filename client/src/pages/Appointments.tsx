@@ -157,13 +157,13 @@ export function Appointments() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
-          <p className="mt-1 text-lg text-gray-500">All your medical appointments in one place</p>
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900">Appointments</h1>
+          <p className="mt-1 text-sm md:text-lg text-gray-500">All your medical appointments in one place</p>
         </div>
-        <Button onClick={openNew} className="gap-2 text-white font-semibold"><Plus className="h-4 w-4" /> Add Appointment</Button>
+        <Button onClick={openNew} className="gap-2 text-white font-semibold shrink-0"><Plus className="h-4 w-4" /> Add Appointment</Button>
       </div>
 
       {loading ? (

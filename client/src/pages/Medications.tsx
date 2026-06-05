@@ -360,7 +360,7 @@ function MedCard({
   onDelete: (e: MedicalHistoryEntry) => void;
 }) {
   return (
-    <div className={`rounded-xl border bg-white p-4 flex flex-col min-h-[130px] ${past ? 'opacity-70' : ''}`}>
+    <div className={`rounded-xl border bg-white p-3 flex flex-col min-h-[100px] ${past ? 'opacity-70' : ''}`}>
       <div className="flex items-start justify-between gap-2 flex-1 grow">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#e3ebf2' }}>

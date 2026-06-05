@@ -431,11 +431,11 @@ export function Records() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto">
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Health Records</h1>
-          <p className="mt-1 text-lg text-gray-500">Upload and manage your health documents from all providers</p>
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900">Health Records</h1>
+          <p className="mt-1 text-sm md:text-lg text-gray-500">Upload and manage your health documents from all providers</p>
         </div>
       </div>
 

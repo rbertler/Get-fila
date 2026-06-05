@@ -36,7 +36,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="flex h-screen w-64 flex-col"
+      className="hidden md:flex h-screen w-64 flex-col"
       style={{ background: 'linear-gradient(135deg, #6da7cc 0%, #91c5bf 100%)' }}
     >
       {/* Logo */}

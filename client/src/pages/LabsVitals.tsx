@@ -492,12 +492,12 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
   const innerContent = (
     <>
       {!embedded && (
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Test Results</h1>
-            <p className="mt-1 text-lg text-gray-500">Track and visualize your health measurements over time</p>
+            <h1 className="text-xl md:text-3xl font-bold text-gray-900">Test Results</h1>
+            <p className="mt-1 text-sm md:text-lg text-gray-500">Track and visualize your health measurements over time</p>
           </div>
-          <div className="flex gap-2">{addEntryDropdown}</div>
+          <div className="flex gap-2 shrink-0">{addEntryDropdown}</div>
         </div>
       )}
 
@@ -524,12 +524,12 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
         <SkeletonList />
       ) : (
         <Tabs value={labTab} onValueChange={setLabTab}>
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <TabsList>
-              <TabsTrigger value="all">All ({vitals.length + labs.length + imaging.length})</TabsTrigger>
-              <TabsTrigger value="vitals">Vitals ({vitals.length})</TabsTrigger>
-              <TabsTrigger value="labs">Lab Results ({labs.length})</TabsTrigger>
-              <TabsTrigger value="imaging">Imaging ({imaging.length})</TabsTrigger>
+          <div className="mb-6">
+            <TabsList className="w-full grid grid-cols-4">
+              <TabsTrigger value="all" className="text-xs px-1">All ({vitals.length + labs.length + imaging.length})</TabsTrigger>
+              <TabsTrigger value="vitals" className="text-xs px-1">Vitals ({vitals.length})</TabsTrigger>
+              <TabsTrigger value="labs" className="text-xs px-1">Labs ({labs.length})</TabsTrigger>
+              <TabsTrigger value="imaging" className="text-xs px-1">Imaging ({imaging.length})</TabsTrigger>
             </TabsList>
           </div>
 
@@ -537,15 +537,15 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
             {vitals.length === 0 ? (
               <EmptyState icon={Activity} title="No vitals recorded" description="Track your weight, blood pressure, heart rate, and more. See trends over time to spot changes early." action={<Button onClick={() => setVitalDialog(true)} className="gap-2"><Plus className="h-4 w-4" />Record a vital</Button>} />
             ) : (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {(Object.keys(vitalGroups) as VitalType[]).map((type) => {
                   const items = vitalGroups[type]!.sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
                   const chartData = items.map((v) => ({ date: format(new Date(v.recordedAt), 'MMM d'), value: v.value, value2: v.value2 }));
 
                   return (
-                    <div key={type} className="rounded-lg border bg-white p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-base font-semibold text-gray-900">{VITAL_LABELS[type]}</h3>
+                    <div key={type} className="rounded-lg border bg-white p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-semibold text-gray-900">{VITAL_LABELS[type]}</h3>
                         <span className="text-xs text-gray-400">{items.length} result{items.length !== 1 ? 's' : ''}</span>
                       </div>
                       {items.length >= 2 && (
@@ -598,19 +598,19 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                   const latest = sorted[sorted.length - 1];
                   const latestStatus = getLabStatus(latest.value, latest.referenceMin, latest.referenceMax, latest.isFlagged);
                   return (
-                    <div key={testName} id={`lab-${testName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className={`rounded-lg border bg-white p-4 ${getLabCardBorder(latestStatus)}`}>
+                    <div key={testName} id={`lab-${testName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className={`rounded-lg border bg-white p-3 ${getLabCardBorder(latestStatus)}`}>
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="labReport" className="text-xs">Lab Report</Badge>
-                          <h3 className="text-lg font-semibold text-gray-900">{testName}</h3>
+                          <h3 className="text-sm font-semibold text-gray-900">{testName}</h3>
                           <LabStatusBadge status={latestStatus} />
                         </div>
-                        <span className="text-sm text-gray-400">{items.length} result{items.length !== 1 ? 's' : ''}</span>
+                        <span className="text-xs text-gray-400">{items.length} result{items.length !== 1 ? 's' : ''}</span>
                       </div>
                       {latest.referenceMin != null && latest.referenceMax != null ? (
-                        <p className="text-sm text-gray-500 mb-2">Reference range: <span className="font-medium">{latest.referenceMin} – {latest.referenceMax} {latest.unit}</span></p>
+                        <p className="text-xs text-gray-500 mb-2">Reference range: <span className="font-medium">{latest.referenceMin} – {latest.referenceMax} {latest.unit}</span></p>
                       ) : (
-                        <p className="text-sm text-gray-400 mb-2">No reference range on file</p>
+                        <p className="text-xs text-gray-400 mb-2">No reference range on file</p>
                       )}
                       {sorted.length >= 2 && (
                         <div className="mb-3 h-40">
@@ -651,17 +651,17 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                 {imaging.map((study) => {
                   const sourceRecord = study.sourceRecordId ? records.find(r => r.id === study.sourceRecordId) : null;
                   return (
-                    <div key={study.id} id={`imaging-${study.id}`} className="rounded-lg border bg-white p-5">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <div key={study.id} id={`imaging-${study.id}`} className="rounded-lg border bg-white p-3">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                             <Badge variant="imaging" className="text-xs">Imaging</Badge>
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-sm font-semibold text-gray-900">
                               {study.description ?? IMAGING_TYPE_LABELS[study.studyType]}
                             </h3>
-                            <span className="text-base text-gray-500">— {toTitleCase(study.bodyPart)}</span>
+                            <span className="text-xs text-gray-500">— {toTitleCase(study.bodyPart)}</span>
                           </div>
-                          <div className="flex flex-wrap gap-3 text-sm text-gray-400">
+                          <div className="flex flex-wrap gap-2 text-xs text-gray-400">
                             <span>{format(new Date(study.studyDate), 'MMM d, yyyy')}</span>
                             {study.facility && <span>{study.facility}</span>}
                             {study.radiologist && <span>Read by {study.radiologist}</span>}
@@ -669,16 +669,16 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                           </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          {!study.sourceRecordId && <button type="button" onClick={() => openEditImaging(study)} className="p-1.5 rounded text-gray-400 hover:text-gray-600 transition-colors"><Pencil className="h-4 w-4" /></button>}
-                          <button type="button" onClick={() => deleteImaging(study.id)} className="p-1.5 rounded text-[#9b2c2c] hover:text-[#7a1f1f] transition-colors"><Trash2 className="h-4 w-4" /></button>
+                          {!study.sourceRecordId && <button type="button" onClick={() => openEditImaging(study)} className="p-1.5 rounded text-gray-400 hover:text-gray-600 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>}
+                          <button type="button" onClick={() => deleteImaging(study.id)} className="p-1.5 rounded text-[#9b2c2c] hover:text-[#7a1f1f] transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
                         </div>
                       </div>
-                      <div className="rounded-md bg-gray-50 border p-4">
-                        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Summary of Findings</p>
-                        <p className="text-base text-gray-700 leading-relaxed">{study.summary}</p>
+                      <div className="rounded-md bg-gray-50 border p-3">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Summary of Findings</p>
+                        <p className="text-sm text-gray-700 leading-relaxed">{study.summary}</p>
                       </div>
-                      {study.notes && <p className="mt-2 text-sm text-gray-400">{study.notes}</p>}
-                      {sourceRecord && <div className="mt-3"><ViewRecordLink record={sourceRecord} /></div>}
+                      {study.notes && <p className="mt-1.5 text-xs text-gray-400">{study.notes}</p>}
+                      {sourceRecord && <div className="mt-2"><ViewRecordLink record={sourceRecord} /></div>}
                     </div>
                   );
                 })}
@@ -694,7 +694,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                 {vitals.length > 0 && (
                   <div>
                     <h2 className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-3">Vitals</h2>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       {(Object.keys(vitalGroups) as VitalType[]).map((type) => {
                         const items = vitalGroups[type]!.sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
                         const chartData = items.map((v) => ({ date: format(new Date(v.recordedAt), 'MMM d'), value: v.value, value2: v.value2 }));
@@ -802,17 +802,17 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                       {imaging.map((study) => {
                         const sourceRecord = study.sourceRecordId ? records.find(r => r.id === study.sourceRecordId) : null;
                         return (
-                          <div key={study.id} className="rounded-lg border bg-white p-5">
-                            <div className="flex items-start justify-between mb-3">
-                              <div>
-                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <div key={study.id} className="rounded-lg border bg-white p-3">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                                   <Badge variant="imaging" className="text-xs">Imaging</Badge>
-                                  <h3 className="text-lg font-semibold text-gray-900">
+                                  <h3 className="text-sm font-semibold text-gray-900">
                                     {study.description ?? IMAGING_TYPE_LABELS[study.studyType]}
                                   </h3>
-                                  <span className="text-base text-gray-500">— {toTitleCase(study.bodyPart)}</span>
+                                  <span className="text-xs text-gray-500">— {toTitleCase(study.bodyPart)}</span>
                                 </div>
-                                <div className="flex flex-wrap gap-3 text-sm text-gray-400">
+                                <div className="flex flex-wrap gap-2 text-xs text-gray-400">
                                   <span>{format(new Date(study.studyDate), 'MMM d, yyyy')}</span>
                                   {study.facility && <span>{study.facility}</span>}
                                   {study.radiologist && <span>Read by {study.radiologist}</span>}
@@ -820,16 +820,16 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                                 </div>
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
-                                {!study.sourceRecordId && <button type="button" onClick={() => openEditImaging(study)} className="p-1.5 rounded text-gray-400 hover:text-gray-600 transition-colors"><Pencil className="h-4 w-4" /></button>}
-                                <button type="button" onClick={() => deleteImaging(study.id)} className="p-1.5 rounded text-[#9b2c2c] hover:text-[#7a1f1f] transition-colors"><Trash2 className="h-4 w-4" /></button>
+                                {!study.sourceRecordId && <button type="button" onClick={() => openEditImaging(study)} className="p-1.5 rounded text-gray-400 hover:text-gray-600 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>}
+                                <button type="button" onClick={() => deleteImaging(study.id)} className="p-1.5 rounded text-[#9b2c2c] hover:text-[#7a1f1f] transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
                               </div>
                             </div>
-                            <div className="rounded-md bg-gray-50 border p-4">
-                              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Summary of Findings</p>
-                              <p className="text-base text-gray-700 leading-relaxed">{study.summary}</p>
+                            <div className="rounded-md bg-gray-50 border p-3">
+                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Summary of Findings</p>
+                              <p className="text-sm text-gray-700 leading-relaxed">{study.summary}</p>
                             </div>
-                            {study.notes && <p className="mt-2 text-sm text-gray-400">{study.notes}</p>}
-                            {sourceRecord && <div className="mt-3"><ViewRecordLink record={sourceRecord} /></div>}
+                            {study.notes && <p className="mt-1.5 text-xs text-gray-400">{study.notes}</p>}
+                            {sourceRecord && <div className="mt-2"><ViewRecordLink record={sourceRecord} /></div>}
                           </div>
                         );
                       })}
@@ -848,7 +848,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
           <DialogHeader><DialogTitle>{editingLabId ? 'Edit Lab Result' : 'Add Lab Result'}</DialogTitle></DialogHeader>
           <form onSubmit={submitLab} className="space-y-4">
             <div className="space-y-2"><Label>Test Name</Label><Input value={labForm.testName} onChange={(e) => setLabForm((f) => ({ ...f, testName: e.target.value }))} required placeholder="Ferritin, TSH, HbA1c" /></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2"><Label>Value</Label><Input type="number" step="any" value={labForm.value} onChange={(e) => setLabForm((f) => ({ ...f, value: e.target.value }))} required placeholder="12.4" /></div>
               <div className="space-y-2"><Label>Unit</Label><Input value={labForm.unit} onChange={(e) => setLabForm((f) => ({ ...f, unit: e.target.value }))} required placeholder="ng/mL" /></div>
               <div className="space-y-2"><Label>Normal Min</Label><Input type="number" step="any" value={labForm.referenceMin} onChange={(e) => setLabForm((f) => ({ ...f, referenceMin: e.target.value }))} placeholder="12" /></div>
@@ -876,7 +876,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                 <SelectContent>{(Object.keys(VITAL_LABELS) as VitalType[]).map((t) => <SelectItem key={t} value={t}>{VITAL_LABELS[t]}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2"><Label>{vitalForm.type === 'BLOOD_PRESSURE' ? 'Systolic' : 'Value'}</Label><Input type="number" step="any" value={vitalForm.value} onChange={(e) => setVitalForm((f) => ({ ...f, value: e.target.value }))} required /></div>
               {vitalForm.type === 'BLOOD_PRESSURE' ? (
                 <div className="space-y-2"><Label>Diastolic</Label><Input type="number" step="any" value={vitalForm.value2} onChange={(e) => setVitalForm((f) => ({ ...f, value2: e.target.value }))} /></div>
@@ -899,7 +899,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editingImagingId ? 'Edit Imaging Study' : 'Add Imaging Study'}</DialogTitle></DialogHeader>
           <form onSubmit={submitImaging} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Study Type</Label>
                 <Select value={imagingForm.studyType} onValueChange={(v) => setImagingForm((f) => ({ ...f, studyType: v as ImagingStudyType }))}>
@@ -910,7 +910,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
               <div className="space-y-2"><Label>Body Part / Region</Label><Input value={imagingForm.bodyPart} onChange={(e) => setImagingForm((f) => ({ ...f, bodyPart: e.target.value }))} required placeholder="Chest, Left knee" /></div>
             </div>
             <div className="space-y-2"><Label>Study Date</Label><Input type="date" value={imagingForm.studyDate} onChange={(e) => setImagingForm((f) => ({ ...f, studyDate: e.target.value }))} required /></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2"><Label>Facility</Label><Input value={imagingForm.facility} onChange={(e) => setImagingForm((f) => ({ ...f, facility: e.target.value }))} placeholder="City Imaging Center" /></div>
               <div className="space-y-2"><Label>Radiologist</Label><Input value={imagingForm.radiologist} onChange={(e) => setImagingForm((f) => ({ ...f, radiologist: e.target.value }))} placeholder="Dr. Name" /></div>
             </div>
@@ -949,7 +949,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
   if (embedded) return innerContent;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
       {innerContent}
     </div>
   );
