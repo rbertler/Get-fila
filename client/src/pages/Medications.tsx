@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { SkeletonList } from '@/components/SkeletonCard';
 import { toast } from '@/hooks/useToast';
@@ -273,6 +274,18 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4 pt-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="med-type">Type *</Label>
+              <Select value={entryType} onValueChange={(v) => setEntryType(v as 'MEDICATION' | 'SUPPLEMENT')}>
+                <SelectTrigger id="med-type">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MEDICATION">Medication</SelectItem>
+                  <SelectItem value="SUPPLEMENT">Supplement</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="med-name">Name *</Label>
