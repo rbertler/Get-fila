@@ -49,6 +49,9 @@ model Provider {
   sourceRecordIds String[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([userId, isArchived])
 }
 
 model MedicalRecord {
@@ -66,6 +69,10 @@ model MedicalRecord {
   notes         String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([userId, recordDate])
+  @@index([userId, recordType])
 }
 
 enum RecordType {
@@ -93,6 +100,10 @@ model MedicalHistoryEntry {
   isManual       Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([userId, category])
+  @@index([sourceRecordId])
 }
 
 enum HistoryCategory {
@@ -120,6 +131,9 @@ model Appointment {
   source        AppointmentSource @default(MANUAL)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([userId, scheduledAt])
 }
 
 enum AppointmentSource {
@@ -144,6 +158,10 @@ model LabResult {
   notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, recordedAt])
+  @@index([sourceRecordId])
 }
 
 model Vital {
@@ -160,6 +178,10 @@ model Vital {
   sourceRecordId String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([userId, type, recordedAt])
+  @@index([sourceRecordId])
 }
 
 enum VitalType {
@@ -183,6 +205,9 @@ model HealthInsightReport {
   generatedAt DateTime @default(now())
   reportType  String   @default("general")
   scopeLabel  String?
+
+  @@index([userId])
+  @@index([userId, generatedAt])
 }
 
 model ImagingStudy {
@@ -201,6 +226,10 @@ model ImagingStudy {
   sourceRecordId String?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([userId, studyDate])
+  @@index([sourceRecordId])
 }
 
 enum ImagingStudyType {
@@ -224,6 +253,8 @@ model ShareToken {
   reportPath  String?
   createdAt   DateTime @default(now())
   accessCount Int      @default(0)
+
+  @@index([userId])
 }
 
 /// Tracks auto-extracted items the user has explicitly deleted so sync won't re-create them.
