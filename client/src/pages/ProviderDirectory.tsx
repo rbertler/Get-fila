@@ -183,6 +183,32 @@ function displayProviderName(storedName: string): string {
   return credential ? `${fullName}, ${credential}` : fullName || storedName;
 }
 
+/** Keywords suggesting an organization/medical-group rather than an individual clinician.
+ *  Loosely mirrors the server's ORGANIZATION_NAME_RE — used here so org-style providers
+ *  display/sort by their natural name (e.g., "Function Health") rather than being run
+ *  through "Last, First" person-name parsing, which would mangle them into "Health, Function". */
+const ORG_NAME_RE = /\b(?:hospital|clinic|medical\s+(?:center|group)|health(?:care|\s+system)?|physicians?|associates?|imaging|radiology|patholog(?:y|ists)|laborator(?:y|ies)|labs?|diagnostics?|wellness|institute|network|partners|group|functional\s+medicine)\b/i;
+
+/** Resolve the name to display/sort by for a provider. Organizations (e.g., "Function
+ *  Health") are the one exception to "Last, First" name formatting — if the stored name
+ *  appears to be a person-name-mangled version of the affiliation (or both name and
+ *  affiliation read as organization names), show/sort by the affiliation instead, since
+ *  that's the group's real, correctly-ordered name. */
+function resolveProviderDisplayName(p: Provider): string {
+  const affiliation = (p.affiliation ?? '').trim();
+  if (affiliation) {
+    const { firstName, lastName, credential } = parseProviderName(p.name);
+    const reordered = [firstName, lastName].filter(Boolean).join(' ').trim();
+    if (!credential && reordered.toLowerCase() === affiliation.toLowerCase()) {
+      return affiliation;
+    }
+    if (ORG_NAME_RE.test(affiliation) && ORG_NAME_RE.test(p.name)) {
+      return affiliation;
+    }
+  }
+  return displayProviderName(p.name);
+}
+
 function formFromProvider(p: Provider): ProviderForm {
   const { firstName, lastName, credential } = parseProviderName(p.name);
   return {
@@ -365,7 +391,7 @@ export function ProviderDirectory() {
       const matchesSpecialty = filterSpecialty === 'all' || p.specialty === filterSpecialty;
       return matchesStatus && matchesSearch && matchesType && matchesSpecialty;
     })
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((a, b) => resolveProviderDisplayName(a).localeCompare(resolveProviderDisplayName(b)));
 
   // Unique types + specialties for filters
   const types = Array.from(new Set(providers.map((p) => p.providerType).filter(Boolean))).sort() as string[];
@@ -404,7 +430,7 @@ export function ProviderDirectory() {
         toast({ variant: 'success', title: 'Provider updated' });
       } else {
         const res = await api.post<{ provider: Provider }>('/providers', payload);
-        setProviders((prev) => [...prev, res.provider].sort((a, b) => a.name.localeCompare(b.name)));
+        setProviders((prev) => [...prev, res.provider].sort((a, b) => resolveProviderDisplayName(a).localeCompare(resolveProviderDisplayName(b))));
         setSelected(res.provider);
         toast({ variant: 'success', title: 'Provider added' });
       }
@@ -522,7 +548,7 @@ export function ProviderDirectory() {
                   className={`w-full text-left px-4 py-3 border-b transition-colors hover:bg-gray-50 ${selected?.id === p.id ? 'bg-primary/5 border-l-2 border-l-primary' : ''}`}
                 >
                   <div className="flex items-center">
-                    <p className="text-sm font-semibold text-gray-900 leading-snug">{p.name}</p>
+                    <p className="text-sm font-semibold text-gray-900 leading-snug">{resolveProviderDisplayName(p)}</p>
                   </div>
                   {(p.providerType || p.specialty) && (
                     <p className="text-sm text-gray-500 mt-0.5 truncate">
@@ -569,7 +595,7 @@ export function ProviderDirectory() {
                       <Stethoscope className="h-5 w-5 md:h-7 md:w-7 text-primary" />
                     </div>
                     <div className="min-w-0">
-                      <h2 className="text-lg md:text-2xl font-bold text-gray-900 leading-tight">{displayProviderName(selected.name)}</h2>
+                      <h2 className="text-lg md:text-2xl font-bold text-gray-900 leading-tight">{resolveProviderDisplayName(selected)}</h2>
                       <p className="text-sm text-gray-500 mt-0.5">
                         {[selected.providerType, selected.specialty].filter(Boolean).join(' · ')}
                         {selected.isManual && <span className="ml-2 text-gray-400">· Manually added</span>}
