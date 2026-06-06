@@ -1175,41 +1175,41 @@ export function History() {
               <X className="h-4 w-4" />
             </button>
           )}
+          {searchOpen && searchResults.length > 0 && (
+            <div className="absolute top-full mt-1 left-0 right-0 z-50 rounded-lg border bg-white shadow-lg overflow-hidden">
+              {searchResults.map(result => (
+                <button
+                  key={result.id}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => {
+                    switchTab(result.tab);
+                    setSearchQuery('');
+                    setSearchOpen(false);
+                    if (result.labTestName) {
+                      setScrollToLabTestName(result.labTestName);
+                    } else if (result.imagingEntryId) {
+                      setScrollToImagingId(result.imagingEntryId);
+                    } else if (result.medEntryId) {
+                      setScrollToMedId(result.medEntryId);
+                    } else if (result.conditionEntryId) {
+                      setScrollToConditionId(result.conditionEntryId);
+                    }
+                  }}
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 border-b last:border-0 transition-colors"
+                >
+                  <Badge variant={result.badgeVariant as any} className="text-xs shrink-0">{result.badgeLabel}</Badge>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{result.label}</p>
+                    {result.sublabel && <p className="text-xs text-gray-400">{result.sublabel}</p>}
+                  </div>
+                  <span className="text-xs text-gray-300 shrink-0">
+                    {({ timeline: 'Timeline', conditions: 'Conditions', medications: 'Medications', 'test-results': 'Test Results', 'family-history': 'Family History' } as Record<string,string>)[result.tab]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        {searchOpen && searchResults.length > 0 && (
-          <div className="absolute top-full mt-1 left-0 right-0 z-50 rounded-lg border bg-white shadow-lg overflow-hidden">
-            {searchResults.map(result => (
-              <button
-                key={result.id}
-                onMouseDown={e => e.preventDefault()}
-                onClick={() => {
-                  switchTab(result.tab);
-                  setSearchQuery('');
-                  setSearchOpen(false);
-                  if (result.labTestName) {
-                    setScrollToLabTestName(result.labTestName);
-                  } else if (result.imagingEntryId) {
-                    setScrollToImagingId(result.imagingEntryId);
-                  } else if (result.medEntryId) {
-                    setScrollToMedId(result.medEntryId);
-                  } else if (result.conditionEntryId) {
-                    setScrollToConditionId(result.conditionEntryId);
-                  }
-                }}
-                className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 border-b last:border-0 transition-colors"
-              >
-                <Badge variant={result.badgeVariant as any} className="text-xs shrink-0">{result.badgeLabel}</Badge>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{result.label}</p>
-                  {result.sublabel && <p className="text-xs text-gray-400">{result.sublabel}</p>}
-                </div>
-                <span className="text-xs text-gray-300 shrink-0">
-                  {({ timeline: 'Timeline', conditions: 'Conditions', medications: 'Medications', 'test-results': 'Test Results', 'family-history': 'Family History' } as Record<string,string>)[result.tab]}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
         {/* Section picker — inline with search */}
         {(() => {
           const TAB_LABELS: Record<string, string> = { timeline: 'Timeline', conditions: 'Conditions', medications: 'Medications', 'test-results': 'Test Results', 'family-history': 'Family History' };

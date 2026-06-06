@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef, FormEvent } from 'react';
 import { usePdfWidth } from '@/hooks/usePdfWidth';
-import { Plus, Activity, AlertTriangle, Trash2, ChevronDown, Scan, X, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
+import { Plus, Activity, AlertTriangle, Trash2, ChevronDown, Scan, X, ChevronLeft, ChevronRight, Pencil, SlidersHorizontal } from 'lucide-react';
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -86,6 +86,47 @@ function getLabCardBorder(status: LabStatus): string {
   if (status === 'out-of-range') return 'border-[#9b2c2c]';
   if (status === 'borderline') return 'border-[#9c4221]';
   return '';
+}
+
+type StatusFilter = 'all' | 'normal' | 'abnormal';
+type DateRangeFilter = 'all' | '3m' | '6m' | '1y' | 'custom';
+
+const DATE_RANGE_LABELS: Record<DateRangeFilter, string> = {
+  all: 'All time',
+  '3m': 'Last 3 months',
+  '6m': 'Last 6 months',
+  '1y': 'Last year',
+  custom: 'Specific range',
+};
+
+type DateBounds = { start: Date | null; end: Date | null };
+
+function getDateBounds(range: DateRangeFilter, customStart: string, customEnd: string): DateBounds {
+  if (range === 'all') return { start: null, end: null };
+  if (range === 'custom') {
+    return {
+      start: customStart ? new Date(`${customStart}T00:00:00`) : null,
+      end: customEnd ? new Date(`${customEnd}T23:59:59.999`) : null,
+    };
+  }
+  const start = new Date();
+  if (range === '3m') start.setMonth(start.getMonth() - 3);
+  else if (range === '6m') start.setMonth(start.getMonth() - 6);
+  else if (range === '1y') start.setFullYear(start.getFullYear() - 1);
+  return { start, end: null };
+}
+
+function isWithinBounds(date: Date, bounds: DateBounds): boolean {
+  if (bounds.start && date < bounds.start) return false;
+  if (bounds.end && date > bounds.end) return false;
+  return true;
+}
+
+// "Normal" = in-range; "Abnormal" = borderline or out-of-range
+function matchesStatusFilter(lab: LabResult, filter: StatusFilter): boolean {
+  if (filter === 'all') return true;
+  const status = getLabStatus(lab.value, lab.referenceMin, lab.referenceMax, lab.isFlagged);
+  return filter === 'normal' ? status === 'in-range' : status !== 'in-range';
 }
 
 function LabStatusBadge({ status }: { status: LabStatus }) {
@@ -203,6 +244,27 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
   const [saving, setSaving] = useState(false);
 
   const [labTab, setLabTab] = useState('all');
+
+  // Result filter (status + date range)
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [dateFilter, setDateFilter] = useState<DateRangeFilter>('all');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const filterRef = useRef<HTMLDivElement>(null);
+  const dateBounds = getDateBounds(dateFilter, customStart, customEnd);
+  const filtersActive = statusFilter !== 'all' || dateFilter !== 'all';
+  const clearFilters = () => { setStatusFilter('all'); setDateFilter('all'); setCustomStart(''); setCustomEnd(''); };
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // Edit mode — stores the id of the item being edited (null = adding new)
   const [editingLabId, setEditingLabId] = useState<string | null>(null);
@@ -449,22 +511,31 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
     setImagingDialog(true);
   };
 
+  // Apply the result filter (status applies to labs only; date range applies to all three)
+  const filteredLabs = labs.filter((l) => isWithinBounds(new Date(l.recordedAt), dateBounds) && matchesStatusFilter(l, statusFilter));
+  const filteredVitals = vitals.filter((v) => isWithinBounds(new Date(v.recordedAt), dateBounds));
+  const filteredImaging = imaging.filter((s) => isWithinBounds(new Date(s.studyDate), dateBounds));
+
   // Group vitals by type for trend charts
-  const vitalGroups = vitals.reduce<Partial<Record<VitalType, Vital[]>>>((acc, v) => {
+  const vitalGroups = filteredVitals.reduce<Partial<Record<VitalType, Vital[]>>>((acc, v) => {
     (acc[v.type] ??= []).push(v);
     return acc;
   }, {});
 
   // Group labs by test name, sorted alphabetically
-  const labGroups = labs.reduce<Record<string, LabResult[]>>((acc, l) => {
+  const labGroups = filteredLabs.reduce<Record<string, LabResult[]>>((acc, l) => {
     (acc[l.testName] ??= []).push(l);
     return acc;
   }, {});
   const sortedLabEntries = Object.entries(labGroups)
     .sort(([a], [b]) => a.localeCompare(b));
 
-  // Flagged test names: groups whose latest result is flagged
-  const flaggedTestNames = Object.entries(labGroups)
+  // Flagged test names (based on all labs, independent of the active filter): groups whose latest result is flagged
+  const allLabGroups = labs.reduce<Record<string, LabResult[]>>((acc, l) => {
+    (acc[l.testName] ??= []).push(l);
+    return acc;
+  }, {});
+  const flaggedTestNames = Object.entries(allLabGroups)
     .filter(([, items]) => {
       const latest = items.reduce((a, b) => new Date(a.recordedAt) > new Date(b.recordedAt) ? a : b);
       return latest.isFlagged;
@@ -489,6 +560,14 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
         <DropdownMenuItem onClick={() => setImagingDialog(true)}>Imaging</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+
+  const noFilterMatchesNotice = (
+    <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-6 text-center">
+      <p className="text-sm font-medium text-gray-600">No results match your filters</p>
+      <p className="text-xs text-gray-400 mt-1">Try adjusting the result status or date range.</p>
+      <button type="button" onClick={clearFilters} className="mt-3 text-xs font-semibold text-[#5ba8a0] hover:text-[#2b4257] transition-colors">Clear filters</button>
+    </div>
   );
 
   const innerContent = (
@@ -526,18 +605,95 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
         <SkeletonList />
       ) : (
         <Tabs value={labTab} onValueChange={setLabTab}>
-          <div className="mb-6">
-            <TabsList className="w-full grid grid-cols-4">
-              <TabsTrigger value="all" className="text-xs px-1">All ({vitals.length + labs.length + imaging.length})</TabsTrigger>
-              <TabsTrigger value="vitals" className="text-xs px-1">Vitals ({vitals.length})</TabsTrigger>
-              <TabsTrigger value="labs" className="text-xs px-1">Labs ({labs.length})</TabsTrigger>
-              <TabsTrigger value="imaging" className="text-xs px-1">Imaging ({imaging.length})</TabsTrigger>
+          <div className="flex items-center gap-2 mb-6">
+            <TabsList className="flex-1 grid grid-cols-4">
+              <TabsTrigger value="all" className="text-xs px-1">All ({filteredVitals.length + filteredLabs.length + filteredImaging.length})</TabsTrigger>
+              <TabsTrigger value="vitals" className="text-xs px-1">Vitals ({filteredVitals.length})</TabsTrigger>
+              <TabsTrigger value="labs" className="text-xs px-1">Labs ({filteredLabs.length})</TabsTrigger>
+              <TabsTrigger value="imaging" className="text-xs px-1">Imaging ({filteredImaging.length})</TabsTrigger>
             </TabsList>
+            <div className="relative shrink-0" ref={filterRef}>
+              <button
+                type="button"
+                onClick={() => setFilterOpen((o) => !o)}
+                className={`relative h-10 w-10 flex items-center justify-center rounded-lg border transition-colors ${filtersActive ? 'border-[#5ba8a0] bg-[#5ba8a0]/10 text-[#2b4257]' : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'}`}
+                aria-label="Filter results"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                {filtersActive && <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#5ba8a0]" />}
+              </button>
+              {filterOpen && (
+                <div className="absolute top-full mt-1 right-0 z-50 w-64 rounded-lg border bg-white shadow-lg p-4 space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Result status</p>
+                    <div className="flex gap-1.5">
+                      {(['all', 'normal', 'abnormal'] as StatusFilter[]).map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setStatusFilter(s)}
+                          className={`flex-1 text-xs font-medium px-2 py-1.5 rounded-md border transition-colors ${statusFilter === s ? 'border-[#5ba8a0] bg-[#5ba8a0]/10 text-[#2b4257]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                        >
+                          {s === 'all' ? 'All' : s === 'normal' ? 'Normal' : 'Abnormal'}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-gray-400 mt-1.5">Applies to lab results. "Abnormal" includes out-of-range and borderline values.</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Date range</p>
+                    <div className="space-y-1">
+                      {(['all', '3m', '6m', '1y', 'custom'] as DateRangeFilter[]).map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setDateFilter(d)}
+                          className={`w-full text-left text-xs font-medium px-2.5 py-1.5 rounded-md border transition-colors ${dateFilter === d ? 'border-[#5ba8a0] bg-[#5ba8a0]/10 text-[#2b4257]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                        >
+                          {DATE_RANGE_LABELS[d]}
+                        </button>
+                      ))}
+                    </div>
+                    {dateFilter === 'custom' && (
+                      <div className="mt-2 space-y-2 rounded-md border border-gray-200 bg-gray-50 p-2.5">
+                        <div className="space-y-1">
+                          <Label className="text-[11px] text-gray-500">From</Label>
+                          <Input
+                            type="date"
+                            value={customStart}
+                            max={customEnd || undefined}
+                            onChange={(e) => setCustomStart(e.target.value)}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[11px] text-gray-500">To</Label>
+                          <Input
+                            type="date"
+                            value={customEnd}
+                            min={customStart || undefined}
+                            onChange={(e) => setCustomEnd(e.target.value)}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {filtersActive && (
+                    <button type="button" onClick={clearFilters} className="text-xs font-medium text-[#5ba8a0] hover:text-[#2b4257] transition-colors">
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <TabsContent value="vitals">
             {vitals.length === 0 ? (
               <EmptyState icon={Activity} title="No vitals recorded" description="Track your weight, blood pressure, heart rate, and more. See trends over time to spot changes early." action={<Button onClick={() => setVitalDialog(true)} className="gap-2"><Plus className="h-4 w-4" />Record a vital</Button>} />
+            ) : filteredVitals.length === 0 ? (
+              noFilterMatchesNotice
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {(Object.keys(vitalGroups) as VitalType[]).map((type) => {
@@ -592,6 +748,8 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
           <TabsContent value="labs">
             {labs.length === 0 ? (
               <EmptyState icon={Activity} title="No lab results yet" description="Add lab results manually, or upload PDF lab reports in the Records section. Values are extracted automatically." action={<Button onClick={() => setLabDialog(true)} className="gap-2"><Plus className="h-4 w-4" />Add lab result</Button>} />
+            ) : filteredLabs.length === 0 ? (
+              noFilterMatchesNotice
             ) : (
               <div className="space-y-4">
                 {sortedLabEntries.map(([testName, items]) => {
@@ -648,9 +806,11 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
           <TabsContent value="imaging">
             {imaging.length === 0 ? (
               <EmptyState icon={Scan} title="No imaging studies" description="Add radiology reports, ultrasounds, MRIs, and other imaging studies. A summary of findings is stored for each." action={<Button onClick={() => setImagingDialog(true)} className="gap-2"><Plus className="h-4 w-4" />Add imaging study</Button>} />
+            ) : filteredImaging.length === 0 ? (
+              noFilterMatchesNotice
             ) : (
               <div className="space-y-4">
-                {imaging.map((study) => {
+                {filteredImaging.map((study) => {
                   const sourceRecord = study.sourceRecordId ? records.find(r => r.id === study.sourceRecordId) : null;
                   return (
                     <div key={study.id} id={`imaging-${study.id}`} className="rounded-lg border bg-white p-3">
@@ -691,9 +851,11 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
           <TabsContent value="all">
             {vitals.length === 0 && labs.length === 0 && imaging.length === 0 ? (
               <EmptyState icon={Activity} title="No entries yet" description="Add vitals, lab results, or imaging studies to see them here." action={<Button onClick={() => setLabDialog(true)} className="gap-2"><Plus className="h-4 w-4" />Add entry</Button>} />
+            ) : filteredVitals.length === 0 && filteredLabs.length === 0 && filteredImaging.length === 0 ? (
+              noFilterMatchesNotice
             ) : (
               <div className="space-y-6">
-                {vitals.length > 0 && (
+                {filteredVitals.length > 0 && (
                   <div>
                     <h2 className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-3">Vitals</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -744,7 +906,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                     </div>
                   </div>
                 )}
-                {labs.length > 0 && (
+                {filteredLabs.length > 0 && (
                   <div>
                     <h2 className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-3">Lab Results</h2>
                     <div className="space-y-4">
@@ -797,11 +959,11 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                     </div>
                   </div>
                 )}
-                {imaging.length > 0 && (
+                {filteredImaging.length > 0 && (
                   <div>
                     <h2 className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-3">Imaging</h2>
                     <div className="space-y-4">
-                      {imaging.map((study) => {
+                      {filteredImaging.map((study) => {
                         const sourceRecord = study.sourceRecordId ? records.find(r => r.id === study.sourceRecordId) : null;
                         return (
                           <div key={study.id} className="rounded-lg border bg-white p-3">
