@@ -6,7 +6,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../utils/prisma.js';
 import { saveFile, deleteFile, getFilePath } from '../services/storage.js';
 import { extractTextFromPdf } from '../services/pdfParser.js';
-import { parseLabResultsFromText, parseConditionsFromText, parseImagingFromText, parseProviderFromText, parseOrderingProviderFromText, parseProviderFromFileName, normalizeLabTestName, canonicalizeLabTestName } from '../services/recordExtractor.js';
+import { parseLabResultsFromText, parseConditionsFromText, parseImagingFromText, parseProviderFromText, parseOrderingProviderFromText, parseProviderFromFileName, normalizeLabTestName, canonicalizeLabTestName, isOrganizationProviderName } from '../services/recordExtractor.js';
 import { extractWithAI } from '../services/aiExtractor.js';
 import { normalizeProviderKey } from './providers.js';
 import fs from 'fs';
@@ -118,6 +118,10 @@ function isCredentialPart(s: string): boolean {
 
 function normalizeProviderName(name: string): string {
   if (!name || !name.trim()) return name;
+  // Medical groups/organizations (e.g., "Function Health", "Quest Diagnostics") aren't
+  // "Last, First" people — reordering them would mangle the name (e.g., "Health, Function").
+  // Keep them as-is, just title-cased.
+  if (isOrganizationProviderName(name)) return titleCaseProviderName(name.trim());
   const parts = name.split(',').map(s => s.trim()).filter(Boolean);
   if (parts.length === 0) return name;
   const firstPart = parts[0];
@@ -264,6 +268,7 @@ router.post(
       // Upsert provider directory
       if (resolvedProvider) {
         const normKey = normalizeProviderKey(resolvedProvider);
+        const isOrg = isOrganizationProviderName(resolvedProvider);
         const existingProvider = await prisma.provider.findFirst({
           where: { userId, name: { equals: resolvedProvider, mode: 'insensitive' } },
         });
@@ -272,7 +277,12 @@ router.post(
             data: {
               userId,
               name: resolvedProvider,
-              providerType: aiResult?.provider?.providerType ?? undefined,
+              // When no individual clinician is identified and we only have a medical
+              // group/organization (e.g., "Function Health"), use that name as the
+              // affiliation too — bypassing the usual individual-name requirement —
+              // so the directory entry surfaces and sorts under the group's name.
+              affiliation: isOrg ? resolvedProvider : undefined,
+              providerType: aiResult?.provider?.providerType ?? (isOrg ? 'Medical Group' : undefined),
               specialty: aiResult?.provider?.specialty ?? undefined,
               sourceRecordIds: [record.id],
               isManual: false,
@@ -284,6 +294,7 @@ router.post(
             where: { id: existingProvider.id },
             data: {
               sourceRecordIds: ids,
+              ...(isOrg && !existingProvider.affiliation && { affiliation: resolvedProvider }),
               ...(aiResult?.provider?.providerType && !existingProvider.providerType && { providerType: aiResult.provider.providerType }),
               ...(aiResult?.provider?.specialty && !existingProvider.specialty && { specialty: aiResult.provider.specialty }),
             },
@@ -782,6 +793,7 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
         await prisma.medicalRecord.update({ where: { id: record.id }, data: { providerName } });
       }
       const provNormKey = normalizeProviderKey(providerName);
+      const isOrg = isOrganizationProviderName(providerName);
       if (!ignoredProviders.has(provNormKey)) {
         const existingProvider = providerByKey.get(provNormKey);
         if (!existingProvider) {
@@ -789,7 +801,10 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
             data: {
               userId,
               name: providerName,
-              providerType: aiResult?.provider?.providerType ?? undefined,
+              // Medical groups/organizations (e.g., "Function Health") have no individual
+              // clinician name — surface them by their group name via affiliation instead.
+              affiliation: isOrg ? providerName : undefined,
+              providerType: aiResult?.provider?.providerType ?? (isOrg ? 'Medical Group' : undefined),
               specialty: aiResult?.provider?.specialty ?? undefined,
               sourceRecordIds: [record.id],
               isManual: false,
@@ -799,9 +814,12 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
           providersAdded++;
         } else {
           const ids = Array.from(new Set([...existingProvider.sourceRecordIds, record.id]));
-          if (ids.length !== existingProvider.sourceRecordIds.length) {
-            await prisma.provider.update({ where: { id: existingProvider.id }, data: { sourceRecordIds: ids } });
-            existingProvider.sourceRecordIds = ids;
+          const update: Record<string, unknown> = {};
+          if (ids.length !== existingProvider.sourceRecordIds.length) update.sourceRecordIds = ids;
+          if (isOrg && !existingProvider.affiliation) update.affiliation = providerName;
+          if (Object.keys(update).length > 0) {
+            await prisma.provider.update({ where: { id: existingProvider.id }, data: update });
+            Object.assign(existingProvider, update);
           }
         }
       }

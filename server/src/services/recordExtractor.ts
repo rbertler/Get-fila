@@ -443,6 +443,23 @@ function cleanProviderName(raw: string): string | null {
   return name;
 }
 
+/** Keywords that suggest a name refers to a medical group/organization rather than
+ *  an individual clinician (e.g., "Function Health", "Quest Diagnostics", "OHSU Neurology"). */
+const ORGANIZATION_NAME_RE = /\b(?:hospital|clinic|medical\s+(?:center|group)|health(?:care|\s+system)?|physicians?|associates?|imaging|radiology|patholog(?:y|ists)|laborator(?:y|ies)|labs?|diagnostics?|wellness|institute|network|partners|group|functional\s+medicine|ob.?gyn|obstetrics|gynecology|pediatrics|oncology|cardiology|dermatology|orthopedics?|neurology|rheumatology|urgent\s+care|family\s+(?:medicine|practice))\b/i;
+
+/** True when a resolved "provider" string looks like a medical group/organization
+ *  rather than an individual clinician — e.g., "Function Health" or "Quest Diagnostics".
+ *  Used to skip person-name normalization ("Last, First") and to populate the
+ *  provider's affiliation instead of requiring an individual's name. */
+export function isOrganizationProviderName(name: string): boolean {
+  const trimmed = name.trim();
+  if (!trimmed) return false;
+  // Starts with "Dr." or contains a credential — almost certainly an individual
+  if (/^Dr\.?\s+/i.test(trimmed)) return false;
+  if (/\b(?:MD|DO|NP|PA|RN|PhD|FACOG|FACP|FACS|FAAFP|MPH|MBA|MS|BS|ND)\.?\b/i.test(trimmed)) return false;
+  return ORGANIZATION_NAME_RE.test(trimmed);
+}
+
 /** Extract specifically the ordering/referring provider — used as the highest-priority
  *  provider for lab results and imaging studies. */
 export function parseOrderingProviderFromText(text: string): string | null {
@@ -506,10 +523,9 @@ export function parseProviderFromText(text: string): string | null {
     if (cleaned && !/\d{5}/.test(cleaned)) return cleaned;
   }
 
-  // 3. Clinic/hospital name in the first 5 lines (letterhead)
-  const clinicRe = /\b(?:hospital|clinic|medical\s+center|health\s+system|healthcare|physicians?|associates?|imaging|radiology|pathology|laboratory|labs?|ob.?gyn|obstetrics|gynecology|pediatrics|oncology|cardiology|dermatology|orthopedics?|neurology)\b/i;
+  // 3. Clinic/hospital/medical-group name in the first 5 lines (letterhead)
   for (const line of lines.slice(0, 5)) {
-    if (clinicRe.test(line) && line.length >= 4 && line.length <= 80) {
+    if (ORGANIZATION_NAME_RE.test(line) && line.length >= 4 && line.length <= 80) {
       const cleaned = cleanProviderName(line.replace(/^\W+|\W+$/g, '').trim());
       if (cleaned) return cleaned;
     }
