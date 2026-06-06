@@ -241,6 +241,12 @@ router.post(
       // Normalize to "Last, First [Middle], Credential" format
       if (resolvedProvider) resolvedProvider = normalizeProviderName(resolvedProvider);
 
+      // For labs and imaging entries specifically, the ordering provider in the
+      // document takes priority (it may differ from the record-level/signing provider).
+      const rawOrderingProvider = parseOrderingProviderFromText(extractedText);
+      const orderingProvider = rawOrderingProvider ? normalizeProviderName(rawOrderingProvider) : null;
+      const labImagingProvider = orderingProvider ?? resolvedProvider;
+
       // Back-fill record's providerName and/or recordDate if resolved via AI/regex
       const backfill: Record<string, unknown> = {};
       if (!providerName && resolvedProvider) backfill.providerName = resolvedProvider;
@@ -310,7 +316,7 @@ router.post(
               isFlagged: lab.isFlagged,
               recordedAt: isNaN(labDate.getTime()) ? effectiveDate : labDate,
               sourceRecordId: record.id,
-              providerName: resolvedProvider,
+              providerName: labImagingProvider,
             },
           });
           existingLabNames.add(key);
@@ -409,7 +415,7 @@ router.post(
                 summary: img.summary,
                 facility: img.facility,
                 studyDate: isNaN(studyDate.getTime()) ? (record.recordDate ?? record.createdAt) : studyDate,
-                providerName: resolvedProvider,
+                providerName: labImagingProvider,
                 sourceRecordId: record.id,
               },
             });
