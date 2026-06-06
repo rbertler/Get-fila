@@ -512,14 +512,25 @@ router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
       }
     }
 
-    // Add to new provider
+    // Add to new provider — create a manual provider entry if none exists yet
     if (providerName) {
       const newKey = normalizeProviderKey(providerName);
       const newProvider = allProviders.find(p => normalizeProviderKey(p.name) === newKey);
-      if (newProvider && !newProvider.sourceRecordIds.includes(recordId)) {
-        await prisma.provider.update({
-          where: { id: newProvider.id },
-          data: { sourceRecordIds: [...newProvider.sourceRecordIds, recordId] },
+      if (newProvider) {
+        if (!newProvider.sourceRecordIds.includes(recordId)) {
+          await prisma.provider.update({
+            where: { id: newProvider.id },
+            data: { sourceRecordIds: [...newProvider.sourceRecordIds, recordId] },
+          });
+        }
+      } else {
+        await prisma.provider.create({
+          data: {
+            userId,
+            name: providerName,
+            sourceRecordIds: [recordId],
+            isManual: true,
+          },
         });
       }
     }

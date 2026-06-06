@@ -344,7 +344,7 @@ export function ProviderDirectory() {
 
     setNumPages(0);
     setPageNumber(1);
-    if (selected && !selected.isManual && selected.sourceRecordIds.length > 0) {
+    if (selected && selected.sourceRecordIds.length > 0) {
       loadLinkedRecords(selected);
     }
   }, [selected?.id]);
@@ -661,7 +661,7 @@ export function ProviderDirectory() {
               )}
 
               {/* Associated Records section */}
-              {!selected.isManual && selected.sourceRecordIds.length > 0 && (
+              {selected.sourceRecordIds.length > 0 && (
                 <div>
                   <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Associated Records</p>
                   {loadingRecords ? (
