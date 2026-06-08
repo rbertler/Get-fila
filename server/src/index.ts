@@ -19,7 +19,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import providersRoutes from './routes/providers.js';
 
 const app = express();
-const PORT = process.env.PORT ?? 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 app.use(
   helmet({
