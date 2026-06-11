@@ -87,30 +87,37 @@ router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
     data: result.data,
   });
 
-  // If the name changed, cascade to all related records across the app
+  // If the name changed, cascade to all related records across the app.
+  // Labs/imaging store the ordering-provider string parsed from the document,
+  // which can differ from the directory name (e.g. "Austin, C" vs
+  // "Austin, C, MD"), so match on normalized key rather than exact name.
   if (result.data.name && result.data.name !== existing.name) {
-    const oldName = existing.name;
+    const oldKey = normalizeProviderKey(existing.name);
     const newName = result.data.name;
     const userId = req.userId!;
 
-    await Promise.all([
-      prisma.medicalRecord.updateMany({
-        where: { userId, providerName: { equals: oldName, mode: 'insensitive' } },
-        data: { providerName: newName },
-      }),
-      prisma.labResult.updateMany({
-        where: { userId, providerName: { equals: oldName, mode: 'insensitive' } },
-        data: { providerName: newName },
-      }),
-      prisma.imagingStudy.updateMany({
-        where: { userId, providerName: { equals: oldName, mode: 'insensitive' } },
-        data: { providerName: newName },
-      }),
-      prisma.appointment.updateMany({
-        where: { userId, providerName: { equals: oldName, mode: 'insensitive' } },
-        data: { providerName: newName },
-      }),
-    ]);
+    const tables = [
+      prisma.medicalRecord,
+      prisma.labResult,
+      prisma.imagingStudy,
+      prisma.appointment,
+    ];
+    await Promise.all(tables.map(async (table) => {
+      const rows: { providerName: string | null }[] = await (table as any).findMany({
+        where: { userId },
+        select: { providerName: true },
+        distinct: ['providerName'],
+      });
+      const matching = rows
+        .map(r => r.providerName)
+        .filter((n): n is string => !!n && normalizeProviderKey(n) === oldKey);
+      if (matching.length) {
+        await (table as any).updateMany({
+          where: { userId, providerName: { in: matching } },
+          data: { providerName: newName },
+        });
+      }
+    }));
   }
 
   res.json({ provider: updated });
