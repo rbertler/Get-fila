@@ -224,8 +224,8 @@ VITALS:
 - Return an empty array [] if no vitals are found.
 
 PROVIDER:
-- Extract the ordering, attending, or signing provider — the clinician responsible for the record.
-- For lab reports, this is the ordering physician. For visit notes, the attending. For imaging, the radiologist or ordering provider.
+- Extract the ordering or attending provider — the clinician who ordered or is responsible for the patient's care.
+- For lab reports: the ordering physician. For visit notes: the attending provider. For imaging: the ordering physician (not the interpreting radiologist). Only use the radiologist if no ordering provider is present.
 - Set to null if no provider is clearly identifiable.
 
 If a category has no data to extract, return an empty array [] for arrays, or null for objects.`;
