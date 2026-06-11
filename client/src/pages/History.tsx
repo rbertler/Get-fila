@@ -223,18 +223,32 @@ function SourceRecordCard({ record }: { record: MedicalRecord }) {
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
   const [pdfContainerRef, pdfWidth] = usePdfWidth(24);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
-  const handleView = () => {
-    setOpen(o => !o);
+  useEffect(() => {
+    return () => { if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl); };
+  }, [pdfBlobUrl]);
+
+  const handleView = async () => {
+    const opening = !open;
+    setOpen(opening);
     setPage(1);
     setNumPages(0);
+    if (opening && !pdfBlobUrl) {
+      try {
+        const blob = await api.blob(`/records/${record.id}/view`);
+        setPdfBlobUrl(URL.createObjectURL(blob));
+      } catch {
+        setPdfError('Could not load PDF.');
+      }
+    }
   };
 
   return (
     <div className="rounded-xl border border-primary/20 bg-primary/5 overflow-hidden">
       <button
         onClick={handleView}
-
         className="w-full text-left p-4 hover:bg-primary/10 transition-colors group"
       >
         <div className="flex items-center gap-2 min-w-0">
@@ -264,14 +278,18 @@ function SourceRecordCard({ record }: { record: MedicalRecord }) {
             </div>
           )}
           <div ref={pdfContainerRef} className="overflow-auto bg-gray-100 flex justify-center p-3 max-h-96">
-            <Document
-              file={`/api/records/${record.id}/view`}
-              onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPage(1); }}
-              loading={<div className="py-8 text-sm text-gray-400">Rendering…</div>}
-              error={<div className="py-8 text-sm text-red-400">Could not render PDF.</div>}
-            >
-              <Page pageNumber={page} width={pdfWidth} renderTextLayer renderAnnotationLayer />
-            </Document>
+            {pdfError ? (
+              <div className="py-8 text-sm text-red-400">{pdfError}</div>
+            ) : (
+              <Document
+                file={pdfBlobUrl}
+                onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPage(1); }}
+                loading={<div className="py-8 text-sm text-gray-400">Rendering…</div>}
+                error={<div className="py-8 text-sm text-red-400">Could not render PDF.</div>}
+              >
+                <Page pageNumber={page} width={pdfWidth} renderTextLayer renderAnnotationLayer />
+              </Document>
+            )}
           </div>
         </div>
       )}
