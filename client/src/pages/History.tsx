@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState, useMemo, useRef, FormEvent } from 'react';
 import { usePdfWidth } from '@/hooks/usePdfWidth';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -116,8 +117,8 @@ const toTitleCase = (s: string) =>
 
 // Sort entries: most-recent startDate first (no date → end), then A-Z by name
 function sortEntries(a: MedicalHistoryEntry, b: MedicalHistoryEntry): number {
-  const ta = a.startDate ? new Date(a.startDate).getTime() : -Infinity;
-  const tb = b.startDate ? new Date(b.startDate).getTime() : -Infinity;
+  const ta = a.startDate ? parseDate(a.startDate).getTime() : -Infinity;
+  const tb = b.startDate ? parseDate(b.startDate).getTime() : -Infinity;
   if (tb !== ta) return tb - ta;
   return a.name.localeCompare(b.name);
 }
@@ -185,15 +186,17 @@ function getImagingStatus(study: ImagingStudy): ResultStatus | null {
   return NORMAL_PATTERN.test(text) ? 'normal' : 'abnormal';
 }
 
+// "Normal" = in-range only; borderline and out-of-range both read "Abnormal",
+// distinguished by color (orange = borderline, red = out of range) — matches LabsVitals.
 const STATUS_LABEL: Record<ResultStatus, string> = {
   abnormal: 'Abnormal',
-  borderline: 'Borderline',
+  borderline: 'Abnormal',
   normal: 'Normal',
 };
 
 const STATUS_STYLE: Record<ResultStatus, { cardBg: string; cardBorder: string; dot: string; color: string; valueColor: string }> = {
   abnormal:  { cardBg: 'bg-[#fde8e8]', cardBorder: 'border-[#9b2c2c]', dot: 'bg-[#9b2c2c]',   color: '#9b2c2c', valueColor: 'text-[#9b2c2c]' },
-  borderline:{ cardBg: 'bg-white',    cardBorder: 'border-gray-200',  dot: 'bg-[#5ba8a0]',   color: '#2b4257', valueColor: 'text-gray-900' },
+  borderline:{ cardBg: 'bg-[#fdf3ec]', cardBorder: 'border-[#9c4221]', dot: 'bg-[#9c4221]',   color: '#9c4221', valueColor: 'text-[#9c4221]' },
   normal:    { cardBg: 'bg-white',    cardBorder: 'border-gray-200',  dot: 'bg-[#5ba8a0]',   color: '#2b4257', valueColor: 'text-gray-900' },
 };
 
@@ -240,7 +243,7 @@ function SourceRecordCard({ record }: { record: MedicalRecord }) {
             <p className="text-base font-medium text-gray-900 truncate">{record.fileName}</p>
             <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-sm text-gray-500">
               {record.providerName && <span>{record.providerName}</span>}
-              {record.recordDate && <span>{format(new Date(record.recordDate), 'MMM d, yyyy')}</span>}
+              {record.recordDate && <span>{format(parseDate(record.recordDate), 'MMM d, yyyy')}</span>}
               <span className="capitalize">{record.recordType.replace(/_/g, ' ').toLowerCase()}</span>
             </div>
           </div>
@@ -288,7 +291,7 @@ function LabReportModal({
 }) {
   const status = getLabGroupStatus(labs);
   const style = STATUS_STYLE[status];
-  const date = labs[0]?.recordedAt ? new Date(labs[0].recordedAt) : null;
+  const date = labs[0]?.recordedAt ? parseDate(labs[0].recordedAt) : null;
   const provider = labs[0]?.providerName ?? null;
 
   return (
@@ -421,7 +424,7 @@ function ImagingDetailModal({
                     {study.studyDate && (
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5" />
-                        {format(new Date(study.studyDate), 'MMMM d, yyyy')}
+                        {format(parseDate(study.studyDate), 'MMMM d, yyyy')}
                       </span>
                     )}
                     {study.facility && <span>{study.facility}</span>}
@@ -501,8 +504,8 @@ function EventDetailModal({
                 <div className="flex items-center gap-1.5 mt-1.5 text-sm text-gray-500">
                   <Calendar className="h-3.5 w-3.5" />
                   <span>
-                    {entry.startDate ? format(new Date(entry.startDate), 'MMMM d, yyyy') : 'Unknown start'}
-                    {entry.endDate && ` — ${format(new Date(entry.endDate), 'MMMM d, yyyy')}`}
+                    {entry.startDate ? format(parseDate(entry.startDate), 'MMMM d, yyyy') : 'Unknown start'}
+                    {entry.endDate && ` — ${format(parseDate(entry.endDate), 'MMMM d, yyyy')}`}
                   </span>
                 </div>
               )}
@@ -614,9 +617,9 @@ function HealthTimeline({
   // Build unified timeline items — entries with an endDate get two cards (start + end)
   const entryItems: TimelineItem[] = [];
   for (const e of entries) {
-    entryItems.push({ kind: 'entry', subKind: 'start', data: e, date: e.startDate ? new Date(e.startDate) : null });
+    entryItems.push({ kind: 'entry', subKind: 'start', data: e, date: e.startDate ? parseDate(e.startDate) : null });
     if (e.endDate) {
-      entryItems.push({ kind: 'entry', subKind: 'end', data: e, date: new Date(e.endDate) });
+      entryItems.push({ kind: 'entry', subKind: 'end', data: e, date: parseDate(e.endDate) });
     }
   }
 
@@ -625,13 +628,13 @@ function HealthTimeline({
     ...labGroups.map((group): TimelineItem => ({
       kind: 'labGroup',
       data: group,
-      date: group[0]?.recordedAt ? new Date(group[0].recordedAt) : null,
+      date: group[0]?.recordedAt ? parseDate(group[0].recordedAt) : null,
       sourceRecordId: group[0]?.sourceRecordId,
     })),
     ...imaging.map((i): TimelineItem => ({
       kind: 'imaging',
       data: i,
-      date: i.studyDate ? new Date(i.studyDate) : null,
+      date: i.studyDate ? parseDate(i.studyDate) : null,
     })),
   ];
 
@@ -791,7 +794,7 @@ function HealthTimeline({
                         </div>
                         <div className="shrink-0 text-right">
                           {group[0]?.recordedAt && (
-                            <p className="text-xs text-gray-500">{format(new Date(group[0].recordedAt), 'MMM d, yyyy')}</p>
+                            <p className="text-xs text-gray-500">{format(parseDate(group[0].recordedAt), 'MMM d, yyyy')}</p>
                           )}
                         </div>
                       </button>
@@ -829,7 +832,7 @@ function HealthTimeline({
                           )}
                         </div>
                         <div className="shrink-0 text-right">
-                          {study.studyDate && <p className="text-xs text-gray-500">{format(new Date(study.studyDate), 'MMM d, yyyy')}</p>}
+                          {study.studyDate && <p className="text-xs text-gray-500">{format(parseDate(study.studyDate), 'MMM d, yyyy')}</p>}
                         </div>
                       </button>
                     </div>
@@ -968,8 +971,8 @@ export function History() {
       name: e.name,
       details: e.details ?? '',
       relative: e.relative ?? '',
-      startDate: e.startDate ? format(new Date(e.startDate), 'yyyy-MM-dd') : '',
-      endDate: e.endDate ? format(new Date(e.endDate), 'yyyy-MM-dd') : '',
+      startDate: e.startDate ? format(parseDate(e.startDate), 'yyyy-MM-dd') : '',
+      endDate: e.endDate ? format(parseDate(e.endDate), 'yyyy-MM-dd') : '',
     });
     setDialogOpen(true);
   };
@@ -1077,7 +1080,7 @@ export function History() {
         results.push({
           id: e.id,
           label: toTitleCase(e.name),
-          sublabel: e.startDate ? format(new Date(e.startDate), 'MMM yyyy') : undefined,
+          sublabel: e.startDate ? format(parseDate(e.startDate), 'MMM yyyy') : undefined,
           tab,
           badgeVariant: CATEGORY_BADGE_VARIANTS[e.category] as string,
           badgeLabel: CATEGORY_LABELS[e.category],
@@ -1096,7 +1099,7 @@ export function History() {
         results.push({
           id: `lab-${l.testName}`,
           label: l.testName,
-          sublabel: format(new Date(l.recordedAt), 'MMM d, yyyy'),
+          sublabel: format(parseDate(l.recordedAt), 'MMM d, yyyy'),
           tab: 'test-results',
           badgeVariant: 'labReport',
           badgeLabel: 'Lab Result',
@@ -1112,7 +1115,7 @@ export function History() {
         results.push({
           id: s.id,
           label: title,
-          sublabel: s.studyDate ? format(new Date(s.studyDate), 'MMM d, yyyy') : undefined,
+          sublabel: s.studyDate ? format(parseDate(s.studyDate), 'MMM d, yyyy') : undefined,
           tab: 'test-results',
           badgeVariant: 'imaging',
           badgeLabel: 'Imaging',
@@ -1299,7 +1302,7 @@ export function History() {
                   <p className="text-sm font-semibold text-gray-900">{toTitleCase(entry.name)}</p>
                   {entry.details && <p className="text-xs text-gray-500 mt-0.5">{entry.details}</p>}
                   {entry.startDate && (
-                    <p className="text-xs text-gray-400 mt-0.5">Since {format(new Date(entry.startDate), 'MMM d, yyyy')}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Since {format(parseDate(entry.startDate), 'MMM d, yyyy')}</p>
                   )}
                 </button>
                 <div className="flex items-center gap-1 shrink-0">
@@ -1375,7 +1378,7 @@ export function History() {
                   </p>
                   {entry.details && <p className="text-xs text-gray-500 mt-0.5">{entry.details}</p>}
                   {entry.startDate && (
-                    <p className="text-xs text-gray-400 mt-0.5">{format(new Date(entry.startDate), 'MMM d, yyyy')}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{format(parseDate(entry.startDate), 'MMM d, yyyy')}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">

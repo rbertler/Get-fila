@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Share2, Link as LinkIcon, Copy, Trash2, ExternalLink, Clock } from 'lucide-react';
 import { api } from '@/api/client';
@@ -71,7 +72,7 @@ export function Share() {
       });
       setCreatedLink(data.shareUrl);
       await fetchAll();
-      toast({ variant: 'success', title: 'Share link created!', description: `Expires ${formatDistanceToNow(new Date(data.expiresAt), { addSuffix: true })}` });
+      toast({ variant: 'success', title: 'Share link created!', description: `Expires ${formatDistanceToNow(parseDate(data.expiresAt), { addSuffix: true })}` });
     } catch (err) {
       toast({ variant: 'destructive', title: 'Failed to generate link', description: err instanceof Error ? err.message : '' });
     } finally {
@@ -140,7 +141,7 @@ export function Share() {
                     key={l.id} id={l.id} checked={selectedLabs.has(l.id)}
                     onChange={() => toggle(selectedLabs, setSelectedLabs, l.id)}
                     label={`${l.testName}: ${l.value} ${l.unit}`}
-                    sub={format(new Date(l.recordedAt), 'MMM d, yyyy')}
+                    sub={format(parseDate(l.recordedAt), 'MMM d, yyyy')}
                     flagged={l.isFlagged}
                   />
                 ))}
@@ -154,7 +155,7 @@ export function Share() {
                     key={v.id} id={v.id} checked={selectedVitals.has(v.id)}
                     onChange={() => toggle(selectedVitals, setSelectedVitals, v.id)}
                     label={`${toTitleCase(v.type)}: ${v.value}${v.value2 ? `/${v.value2}` : ''} ${v.unit}`}
-                    sub={format(new Date(v.recordedAt), 'MMM d, yyyy')}
+                    sub={format(parseDate(v.recordedAt), 'MMM d, yyyy')}
                   />
                 ))}
               </SelectSection>
@@ -185,13 +186,13 @@ export function Share() {
                 ) : (
                   <div className="space-y-3">
                     {tokens.map((t) => {
-                      const expired = isPast(new Date(t.expiresAt));
+                      const expired = isPast(parseDate(t.expiresAt));
                       const shareUrl = `${clientUrl}/share/${t.token}`;
                       return (
                         <div key={t.id} className={`rounded-lg border p-3 ${expired ? 'opacity-60' : ''}`}>
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-sm font-medium text-gray-700">
-                              {format(new Date(t.createdAt), 'MMM d, h:mm a')}
+                              {format(parseDate(t.createdAt), 'MMM d, h:mm a')}
                             </span>
                             {expired ? (
                               <Badge variant="secondary">Expired</Badge>
@@ -201,7 +202,7 @@ export function Share() {
                           </div>
                           <p className="text-sm text-gray-500 flex items-center gap-1 mb-2">
                             <Clock className="h-3 w-3" />
-                            {expired ? 'Expired' : `Expires ${formatDistanceToNow(new Date(t.expiresAt), { addSuffix: true })}`}
+                            {expired ? 'Expired' : `Expires ${formatDistanceToNow(parseDate(t.expiresAt), { addSuffix: true })}`}
                           </p>
                           <p className="text-sm text-gray-400">{t.accessCount} view{t.accessCount !== 1 ? 's' : ''}</p>
                           {!expired && (

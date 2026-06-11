@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState, FormEvent } from 'react';
 import { Plus, Calendar, MapPin, Clock, RefreshCw, Mail, Pencil, Trash2, Phone, Globe, Building2, FileText, ExternalLink } from 'lucide-react';
 import { api } from '@/api/client';
@@ -82,8 +83,8 @@ export function Appointments() {
     fetchAll().finally(() => setLoading(false));
   }, []);
 
-  const upcoming = appointments.filter((a) => isFuture(new Date(a.scheduledAt)));
-  const past = appointments.filter((a) => isPast(new Date(a.scheduledAt)));
+  const upcoming = appointments.filter((a) => isFuture(parseDate(a.scheduledAt)));
+  const past = appointments.filter((a) => isPast(parseDate(a.scheduledAt)));
 
   const openNew = () => { setEditing(null); setForm(EMPTY); setAddingNewProvider(false); setDialogOpen(true); };
   const openEdit = (a: Appointment) => {
@@ -92,8 +93,8 @@ export function Appointments() {
     setForm({
       providerName: a.providerName,
       specialty: a.specialty ?? '',
-      date: format(new Date(a.scheduledAt), 'yyyy-MM-dd'),
-      time: format(new Date(a.scheduledAt), 'HH:mm'),
+      date: format(parseDate(a.scheduledAt), 'yyyy-MM-dd'),
+      time: format(parseDate(a.scheduledAt), 'HH:mm'),
       duration: a.duration ? String(a.duration) : '',
       reason: a.reason ?? '',
       notes: a.notes ?? '',
@@ -342,7 +343,7 @@ function AppointmentList({
               <p className="text-xs text-gray-500 mb-0.5">{[displayType, displaySpecialty].filter(Boolean).join(' · ')}</p>
             )}
             <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(a.scheduledAt), 'MMM d, yyyy h:mm a')}</span>
+              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{format(parseDate(a.scheduledAt), 'MMM d, yyyy h:mm a')}</span>
               {a.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{a.location}</span>}
               {a.duration && <span>{a.duration} min</span>}
             </div>
@@ -368,7 +369,7 @@ function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit,
   onDelete: (id: string) => void;
 }) {
   const SOURCE_LABELS: Record<string, string> = { MANUAL: 'Manual', GOOGLE_CALENDAR: 'Google Calendar', GMAIL: 'Gmail' };
-  const isPastAppt = isPast(new Date(a.scheduledAt));
+  const isPastAppt = isPast(parseDate(a.scheduledAt));
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -395,8 +396,8 @@ function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit,
             <div className="px-4 py-3 flex items-center gap-3">
               <Clock className="h-4 w-4 text-gray-400 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-gray-900">{format(new Date(a.scheduledAt), 'EEEE, MMMM d, yyyy')}</p>
-                <p className="text-sm text-gray-500">{format(new Date(a.scheduledAt), 'h:mm a')}{a.duration ? ` · ${a.duration} min` : ''}</p>
+                <p className="text-sm font-medium text-gray-900">{format(parseDate(a.scheduledAt), 'EEEE, MMMM d, yyyy')}</p>
+                <p className="text-sm text-gray-500">{format(parseDate(a.scheduledAt), 'h:mm a')}{a.duration ? ` · ${a.duration} min` : ''}</p>
               </div>
               {isPastAppt && <Badge variant="secondary" className="ml-auto text-xs shrink-0">Past</Badge>}
             </div>

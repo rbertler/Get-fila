@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { usePdfWidth } from '@/hooks/usePdfWidth';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -19,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { EmptyState } from '@/components/EmptyState';
 import { SkeletonList } from '@/components/SkeletonCard';
 import { toast } from '@/hooks/useToast';
+import { ToastAction } from '@/components/ui/toast';
 import { format, formatDistanceToNow, isPast } from 'date-fns';
 
 const RECORD_TYPE_LABELS: Record<RecordType, string> = {
@@ -154,7 +156,7 @@ export function Records() {
     const years = new Set<string>();
     records.forEach(r => {
       const d = r.recordDate ?? r.createdAt;
-      if (d) years.add(new Date(d).getFullYear().toString());
+      if (d) years.add(parseDate(d).getFullYear().toString());
     });
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [records]);
@@ -164,7 +166,7 @@ export function Records() {
       if (filterType !== 'ALL' && r.recordType !== filterType) return false;
       if (filterYear !== 'ALL') {
         const d = r.recordDate ?? r.createdAt;
-        if (!d || new Date(d).getFullYear().toString() !== filterYear) return false;
+        if (!d || parseDate(d).getFullYear().toString() !== filterYear) return false;
       }
       return true;
     });
@@ -287,7 +289,7 @@ export function Records() {
     setEditForm({
       name: r.fileName,
       type: r.recordType,
-      date: r.recordDate ? format(new Date(r.recordDate), 'yyyy-MM-dd') : '',
+      date: r.recordDate ? format(parseDate(r.recordDate), 'yyyy-MM-dd') : '',
       providerName: r.providerName ?? '',
     });
     setEditDialogOpen(true);
@@ -296,6 +298,12 @@ export function Records() {
   const handleSaveEdit = async () => {
     if (!editingRecord) return;
     setSaving(true);
+    const previous = {
+      fileName: editingRecord.fileName,
+      recordType: editingRecord.recordType,
+      recordDate: editingRecord.recordDate ? format(parseDate(editingRecord.recordDate), 'yyyy-MM-dd') : undefined,
+      providerName: editingRecord.providerName ?? null,
+    };
     try {
       await api.patch(`/records/${editingRecord.id}`, {
         fileName: editForm.name.trim() || editingRecord.fileName,
@@ -303,7 +311,27 @@ export function Records() {
         recordDate: editForm.date || undefined,
         providerName: editForm.providerName.trim() || undefined,
       });
-      toast({ variant: 'success', title: 'Record updated' });
+      const recordId = editingRecord.id;
+      toast({
+        variant: 'success',
+        title: 'Record updated',
+        action: (
+          <ToastAction
+            altText="Undo update"
+            onClick={async () => {
+              try {
+                await api.patch(`/records/${recordId}`, previous);
+                await fetchRecords();
+                toast({ title: 'Change undone' });
+              } catch {
+                toast({ variant: 'destructive', title: 'Could not undo' });
+              }
+            }}
+          >
+            Undo
+          </ToastAction>
+        ),
+      });
       setEditDialogOpen(false);
       await fetchRecords();
     } catch (err) {
@@ -329,20 +357,15 @@ export function Records() {
     setDeleteAssociated(true);
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (!deleteBulkIds) return;
-    setBulkSaving(true);
-    try {
-      await Promise.all(deleteBulkIds.map(id => api.delete(`/records/${id}?deleteAssociated=${deleteAssociated}`)));
-      toast({ variant: 'success', title: `${deleteBulkIds.length} record${deleteBulkIds.length !== 1 ? 's' : ''} deleted` });
-      clearSelection();
-      setDeleteBulkIds(null);
-      await fetchRecords();
-    } catch {
-      toast({ variant: 'destructive', title: 'Delete failed' });
-    } finally {
-      setBulkSaving(false);
-    }
+    scheduleDelete(
+      deleteBulkIds,
+      deleteAssociated,
+      `${deleteBulkIds.length} record${deleteBulkIds.length !== 1 ? 's' : ''} deleted`
+    );
+    clearSelection();
+    setDeleteBulkIds(null);
   };
 
   const handleBulkAssignProvider = async () => {
@@ -385,7 +408,7 @@ export function Records() {
       });
       setCreatedLink(data.shareUrl);
       await fetchTokens();
-      toast({ variant: 'success', title: 'Share link created!', description: `Expires ${formatDistanceToNow(new Date(data.expiresAt), { addSuffix: true })}` });
+      toast({ variant: 'success', title: 'Share link created!', description: `Expires ${formatDistanceToNow(parseDate(data.expiresAt), { addSuffix: true })}` });
     } catch (err) {
       toast({ variant: 'destructive', title: 'Failed to generate link', description: err instanceof Error ? err.message : '' });
     } finally {
@@ -410,19 +433,38 @@ export function Records() {
     setDeleteAssociated(true);
   };
 
-  const handleDelete = async () => {
+  // Deletes are deferred until the undo toast expires; Undo cancels the API call.
+  const scheduleDelete = (ids: string[], associated: boolean, title: string) => {
+    setRecords((prev) => prev.filter((r) => !ids.includes(r.id)));
+    const timer = setTimeout(() => {
+      Promise.all(ids.map((id) => api.delete(`/records/${id}?deleteAssociated=${associated}`)))
+        .catch(async () => {
+          toast({ variant: 'destructive', title: 'Delete failed' });
+          await fetchRecords();
+        });
+    }, 5000);
+    toast({
+      variant: 'success',
+      title,
+      action: (
+        <ToastAction
+          altText="Undo delete"
+          onClick={async () => {
+            clearTimeout(timer);
+            await fetchRecords();
+            toast({ title: 'Delete undone' });
+          }}
+        >
+          Undo
+        </ToastAction>
+      ),
+    });
+  };
+
+  const handleDelete = () => {
     if (!deleteTarget) return;
-    setDeleting(true);
-    try {
-      await api.delete(`/records/${deleteTarget.id}?deleteAssociated=${deleteAssociated}`);
-      setRecords((prev) => prev.filter((r) => r.id !== deleteTarget.id));
-      toast({ variant: 'success', title: 'Record deleted' });
-    } catch {
-      toast({ variant: 'destructive', title: 'Delete failed' });
-    } finally {
-      setDeleting(false);
-      setDeleteTarget(null);
-    }
+    scheduleDelete([deleteTarget.id], deleteAssociated, 'Record deleted');
+    setDeleteTarget(null);
   };
 
   const handleDownload = (id: string, name: string) => {
@@ -845,7 +887,7 @@ export function Records() {
                 <div className="flex items-center gap-2 text-xs text-gray-500 min-w-0">
                   <span className="flex items-center gap-1 whitespace-nowrap shrink-0">
                     <Calendar className="h-3 w-3 shrink-0" />
-                    {r.recordDate ? format(new Date(r.recordDate), 'MMM d, yyyy') : <span className="text-gray-400">No date</span>}
+                    {r.recordDate ? format(parseDate(r.recordDate), 'MMM d, yyyy') : <span className="text-gray-400">No date</span>}
                   </span>
                   {r.providerName && (
                     <span className="flex items-center gap-1 min-w-0">
@@ -884,7 +926,7 @@ export function Records() {
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {previewRecord && <Badge variant={RECORD_TYPE_COLORS[previewRecord.recordType]}>{RECORD_TYPE_LABELS[previewRecord.recordType]}</Badge>}
               {previewRecord?.providerName && <span className="text-xs text-gray-500">{previewRecord.providerName}</span>}
-              {previewRecord?.recordDate && <span className="text-xs text-gray-400">{format(new Date(previewRecord.recordDate), 'MMM d, yyyy')}</span>}
+              {previewRecord?.recordDate && <span className="text-xs text-gray-400">{format(parseDate(previewRecord.recordDate), 'MMM d, yyyy')}</span>}
             </div>
           </DialogHeader>
 
@@ -1012,14 +1054,14 @@ export function Records() {
                 <p className="text-sm font-semibold text-gray-700 mb-2">Active Share Links</p>
                 <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                   {tokens.map((t) => {
-                    const expired = isPast(new Date(t.expiresAt));
+                    const expired = isPast(parseDate(t.expiresAt));
                     const shareUrl = `${window.location.origin}/share/${t.token}`;
                     const recordCount = Array.isArray((t.config as any)?.includeRecords) ? (t.config as any).includeRecords.length : 0;
                     return (
                       <div key={t.id} className={`rounded-lg border p-3 ${expired ? 'opacity-50' : ''}`}>
                         <div className="flex items-center justify-between mb-1 gap-2">
                           <span className="text-xs font-medium text-gray-700 truncate">
-                            {format(new Date(t.createdAt), 'MMM d, h:mm a')}
+                            {format(parseDate(t.createdAt), 'MMM d, h:mm a')}
                           </span>
                           {expired ? (
                             <Badge variant="secondary" className="text-xs shrink-0">Expired</Badge>
@@ -1029,7 +1071,7 @@ export function Records() {
                         </div>
                         <p className="text-xs text-gray-500 flex items-center gap-1 mb-0.5">
                           <Clock className="h-3 w-3 shrink-0" />
-                          {expired ? 'Expired' : `Expires ${formatDistanceToNow(new Date(t.expiresAt), { addSuffix: true })}`}
+                          {expired ? 'Expired' : `Expires ${formatDistanceToNow(parseDate(t.expiresAt), { addSuffix: true })}`}
                         </p>
                         <p className="text-xs text-gray-400">
                           {recordCount > 0 ? `${recordCount} record${recordCount !== 1 ? 's' : ''} · ` : ''}{t.accessCount} view{t.accessCount !== 1 ? 's' : ''}

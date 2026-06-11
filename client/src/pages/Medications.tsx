@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState, useRef, FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Pill, Pencil, Trash2, ChevronDown } from 'lucide-react';
@@ -63,8 +64,8 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
               name: dosageMatch ? dosageMatch[1].trim() : target.name,
               dosage: dosageMatch ? dosageMatch[2].trim() : '',
               details: target.details ?? '',
-              startDate: target.startDate ? format(new Date(target.startDate), 'yyyy-MM-dd') : '',
-              endDate: target.endDate ? format(new Date(target.endDate), 'yyyy-MM-dd') : '',
+              startDate: target.startDate ? format(parseDate(target.startDate), 'yyyy-MM-dd') : '',
+              endDate: target.endDate ? format(parseDate(target.endDate), 'yyyy-MM-dd') : '',
             });
             setDialogOpen(true);
             setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete('edit'); return next; }, { replace: true });
@@ -75,8 +76,8 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
   }, []);
 
   const now = new Date();
-  const active = entries.filter(e => !e.endDate || new Date(e.endDate) >= now);
-  const past = entries.filter(e => e.endDate && new Date(e.endDate) < now);
+  const active = entries.filter(e => !e.endDate || parseDate(e.endDate) >= now);
+  const past = entries.filter(e => e.endDate && parseDate(e.endDate) < now);
 
   const openAdd = (type: 'MEDICATION' | 'SUPPLEMENT') => {
     setEditing(null);
@@ -118,8 +119,8 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
       name: dosageMatch ? dosageMatch[1].trim() : entry.name,
       dosage: dosageMatch ? dosageMatch[2].trim() : '',
       details: entry.details ?? '',
-      startDate: entry.startDate ? format(new Date(entry.startDate), 'yyyy-MM-dd') : '',
-      endDate: entry.endDate ? format(new Date(entry.endDate), 'yyyy-MM-dd') : '',
+      startDate: entry.startDate ? format(parseDate(entry.startDate), 'yyyy-MM-dd') : '',
+      endDate: entry.endDate ? format(parseDate(entry.endDate), 'yyyy-MM-dd') : '',
     });
     setDialogOpen(true);
   };
@@ -129,18 +130,31 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
     setSaving(true);
     try {
       const combinedName = [form.name.trim(), form.dosage.trim()].filter(Boolean).join(' ');
-      const payload = {
-        category: entryType,
-        name: combinedName,
-        details: form.details.trim() || undefined,
-        startDate: form.startDate || undefined,
-        endDate: form.endDate || undefined,
-      };
       if (editing) {
-        await api.patch(`/history/${editing.id}`, payload);
-        toast({ title: 'Updated', description: `${combinedName} has been updated.` });
+        // Cleared fields must be sent as null — undefined means "leave unchanged",
+        // so clearing the end date would never reactivate the medication.
+        await api.patch(`/history/${editing.id}`, {
+          category: entryType,
+          name: combinedName,
+          details: form.details.trim() || null,
+          startDate: form.startDate || null,
+          endDate: form.endDate || null,
+        });
+        const reactivated = editing.endDate && !form.endDate;
+        toast({
+          title: 'Updated',
+          description: reactivated
+            ? `${combinedName} is active again.`
+            : `${combinedName} has been updated.`,
+        });
       } else {
-        await api.post('/history', payload);
+        await api.post('/history', {
+          category: entryType,
+          name: combinedName,
+          details: form.details.trim() || undefined,
+          startDate: form.startDate || undefined,
+          endDate: form.endDate || undefined,
+        });
         toast({ title: 'Added', description: `${combinedName} has been added.` });
       }
       await fetchMeds();
@@ -254,7 +268,7 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {entries.map(entry => (
                   <div key={entry.id} id={`med-${entry.id}`}>
-                    <MedCard entry={entry} past={!!entry.endDate && new Date(entry.endDate) < new Date()} onEdit={openEdit} onDiscontinue={handleDiscontinue} onDelete={handleDelete} />
+                    <MedCard entry={entry} past={!!entry.endDate && parseDate(entry.endDate) < new Date()} onEdit={openEdit} onDiscontinue={handleDiscontinue} onDelete={handleDelete} />
                   </div>
                 ))}
               </div>
@@ -408,12 +422,12 @@ function MedCard({
         <div className="flex gap-2 flex-wrap">
           {entry.startDate && (
             <span className="text-xs text-gray-400">
-              Since {format(new Date(entry.startDate), 'MMM yyyy')}
+              Since {format(parseDate(entry.startDate), 'MMM yyyy')}
             </span>
           )}
           {entry.endDate && (
             <span className="text-xs text-gray-400">
-              · Ended {format(new Date(entry.endDate), 'MMM yyyy')}
+              · Ended {format(parseDate(entry.endDate), 'MMM yyyy')}
             </span>
           )}
           {entry.category === 'MEDICATION' && (

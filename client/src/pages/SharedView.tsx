@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AlertCircle, ExternalLink } from 'lucide-react';
@@ -68,7 +69,7 @@ export function SharedView() {
 
         <div className="rounded-lg border bg-white p-6 mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Health Summary for {data?.patientName}</h1>
-          <p className="text-gray-500">Shared link · Expires {data ? format(new Date(data.expiresAt), 'MMMM d, yyyy') : ''}</p>
+          <p className="text-gray-500">Shared link · Expires {data ? format(parseDate(data.expiresAt), 'MMMM d, yyyy') : ''}</p>
         </div>
 
         <div className="rounded-lg border bg-white p-6">

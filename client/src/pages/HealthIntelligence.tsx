@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { Brain, Clock, AlertCircle, Lightbulb, BookOpen, Download, Share2, FileText, Copy, Check, X, SlidersHorizontal, ChevronDown, ChevronRight, Search, Trash2 } from 'lucide-react';
 import { useInsight, FocusedScope } from '@/context/InsightContext';
@@ -301,7 +302,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                             <input type="checkbox" checked={selectedEntries.has(e.id)} onChange={() => toggleEntry(e.id)} className="h-4 w-4 rounded accent-[#2b4257]" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-gray-900">{e.name}</p>
-                              {e.startDate && <p className="text-xs text-gray-400">{format(new Date(e.startDate), 'MMM yyyy')}{e.endDate ? ` – ${format(new Date(e.endDate), 'MMM yyyy')}` : ''}</p>}
+                              {e.startDate && <p className="text-xs text-gray-400">{format(parseDate(e.startDate), 'MMM yyyy')}{e.endDate ? ` – ${format(parseDate(e.endDate), 'MMM yyyy')}` : ''}</p>}
                             </div>
                           </label>
                         ))}
@@ -332,7 +333,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                         <input type="checkbox" checked={selectedLabs.has(l.testName)} onChange={() => toggleLab(l.testName)} className="h-4 w-4 rounded accent-[#2b4257]" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-900">{l.testName}</p>
-                          <p className="text-xs text-gray-400">Latest: {format(new Date(l.latestDate), 'MMM d, yyyy')}</p>
+                          <p className="text-xs text-gray-400">Latest: {format(parseDate(l.latestDate), 'MMM d, yyyy')}</p>
                         </div>
                       </label>
                     ))}
@@ -361,7 +362,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                         <input type="checkbox" checked={selectedImaging.has(s.id)} onChange={() => toggleImaging(s.id)} className="h-4 w-4 rounded accent-[#2b4257]" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-900">{s.description ?? `${s.studyType} – ${s.bodyPart}`}</p>
-                          {s.studyDate && <p className="text-xs text-gray-400">{format(new Date(s.studyDate), 'MMM d, yyyy')}</p>}
+                          {s.studyDate && <p className="text-xs text-gray-400">{format(parseDate(s.studyDate), 'MMM d, yyyy')}</p>}
                         </div>
                       </label>
                     ))}
@@ -456,7 +457,7 @@ export function HealthIntelligence() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `health-intelligence-${format(new Date(report.generatedAt), 'yyyy-MM-dd')}.pdf`;
+      a.download = `health-intelligence-${format(parseDate(report.generatedAt), 'yyyy-MM-dd')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -546,7 +547,7 @@ export function HealthIntelligence() {
                   <div className="flex items-center justify-between gap-1.5 mb-1.5">
                     <p className="text-sm font-medium text-gray-900 flex items-center gap-1.5 truncate">
                       <Clock className="h-3 w-3 text-gray-400 shrink-0" />
-                      <span className="truncate">{format(new Date(r.generatedAt), 'MMM d, yyyy')}</span>
+                      <span className="truncate">{format(parseDate(r.generatedAt), 'MMM d, yyyy')}</span>
                     </p>
                   </div>
                   <div className="flex items-center justify-between">
@@ -572,7 +573,7 @@ export function HealthIntelligence() {
               {/* Header row: date label + action buttons */}
               <div className="mb-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
-                  {selected.reportType === 'focused' ? 'Focused Analysis · ' : ''}{format(new Date(selected.generatedAt), 'MMMM d, yyyy')}
+                  {selected.reportType === 'focused' ? 'Focused Analysis · ' : ''}{format(parseDate(selected.generatedAt), 'MMMM d, yyyy')}
                 </p>
                 {selected.scopeLabel && (
                   <p className="text-xs text-gray-400 mb-1.5">{selected.scopeLabel}</p>

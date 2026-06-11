@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ToastProps } from '@/components/ui/toast';
+import type { ToastProps, ToastActionElement } from '@/components/ui/toast';
 
 const TOAST_LIMIT = 5;
 const TOAST_REMOVE_DELAY = 1000; // time after dismiss animation before removing from DOM
@@ -9,6 +9,7 @@ type ToasterToast = ToastProps & {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
+  action?: ToastActionElement;
 };
 
 type Action =

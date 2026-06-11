@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState, useContext, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -430,7 +431,7 @@ export function Dashboard() {
                           <p className="text-sm font-semibold text-gray-900 truncate">{a.providerName}</p>
                           <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
                             <Clock className="h-3 w-3 shrink-0" />
-                            <span className="truncate">{format(new Date(a.scheduledAt), 'MMM d · h:mm a')}{a.specialty ? ` · ${a.specialty}` : ''}</span>
+                            <span className="truncate">{format(parseDate(a.scheduledAt), 'MMM d · h:mm a')}{a.specialty ? ` · ${a.specialty}` : ''}</span>
                           </p>
                           {a.reason && <p className="text-xs text-gray-500 mt-0.5 truncate">{a.reason}</p>}
                         </div>
@@ -510,7 +511,7 @@ export function Dashboard() {
                           <p className="text-sm font-semibold text-gray-900">{c.name}</p>
                           {c.details && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{c.details}</p>}
                           {c.startDate && (
-                            <p className="text-xs text-gray-400 mt-0.5">Since {format(new Date(c.startDate), 'MMM yyyy')}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Since {format(parseDate(c.startDate), 'MMM yyyy')}</p>
                           )}
                         </div>
                       </div>
@@ -561,7 +562,7 @@ export function Dashboard() {
                               {lab.referenceMin !== undefined && lab.referenceMax !== undefined && (
                                 <span className="text-xs text-gray-400">Ref: {lab.referenceMin}–{lab.referenceMax} {lab.unit}</span>
                               )}
-                              <span className="text-xs text-gray-400">{format(new Date(lab.recordedAt), 'MMM d, yyyy')}</span>
+                              <span className="text-xs text-gray-400">{format(parseDate(lab.recordedAt), 'MMM d, yyyy')}</span>
                             </div>
                           </div>
                         </div>
@@ -601,7 +602,7 @@ export function Dashboard() {
                 <div className="flex-1 overflow-y-auto space-y-4">
                   <div>
                     <p className="text-xs text-gray-400 mb-2">
-                      Generated {formatDistanceToNow(new Date(data.latestInsight.generatedAt), { addSuffix: true })}
+                      Generated {formatDistanceToNow(parseDate(data.latestInsight.generatedAt), { addSuffix: true })}
                     </p>
                     <p className={`text-sm text-gray-700 leading-relaxed ${!showFullInsight ? 'line-clamp-3' : ''}`}>
                       {data.latestInsight.summary}
@@ -690,7 +691,7 @@ export function Dashboard() {
                       <div className="shrink-0 flex flex-col items-end gap-0.5">
                         <Badge variant={RECORD_TYPE_COLORS[r.recordType]} className="text-xs">{RECORD_TYPE_LABELS[r.recordType]}</Badge>
                         <p className="text-xs text-gray-400">
-                          {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(parseDate(r.createdAt), { addSuffix: true })}
                         </p>
                       </div>
                     </button>

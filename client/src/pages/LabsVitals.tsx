@@ -1,3 +1,4 @@
+import { parseDate } from '@/lib/utils';
 import { useEffect, useState, useCallback, useRef, FormEvent } from 'react';
 import { usePdfWidth } from '@/hooks/usePdfWidth';
 import { Plus, Activity, AlertTriangle, Trash2, ChevronDown, Scan, X, ChevronLeft, ChevronRight, Pencil, SlidersHorizontal } from 'lucide-react';
@@ -105,8 +106,8 @@ function getDateBounds(range: DateRangeFilter, customStart: string, customEnd: s
   if (range === 'all') return { start: null, end: null };
   if (range === 'custom') {
     return {
-      start: customStart ? new Date(`${customStart}T00:00:00`) : null,
-      end: customEnd ? new Date(`${customEnd}T23:59:59.999`) : null,
+      start: customStart ? parseDate(`${customStart}T00:00:00`) : null,
+      end: customEnd ? parseDate(`${customEnd}T23:59:59.999`) : null,
     };
   }
   const start = new Date();
@@ -198,7 +199,7 @@ function LabResultRow({ lab, record, onDelete, onEdit }: { lab: LabResult; recor
           {onEdit && <button type="button" onClick={() => onEdit(lab)} className="p-1 rounded text-gray-400 hover:text-gray-600 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>}
           {onDelete && <button type="button" onClick={() => onDelete(lab.id)} className="p-1 rounded text-[#9b2c2c] hover:text-[#7a1f1f] transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>}
           {lab.providerName && <span className="text-sm text-gray-400 hidden sm:inline">{lab.providerName}</span>}
-          <span className="text-sm text-gray-400">{format(new Date(lab.recordedAt), 'MMM d, yyyy')}</span>
+          <span className="text-sm text-gray-400">{format(parseDate(lab.recordedAt), 'MMM d, yyyy')}</span>
           {record && (
             <button onClick={handleView} disabled={loading} className="text-xs text-gray-400 hover:text-primary transition-colors whitespace-nowrap">
               {loading ? 'Loading…' : pdfData ? 'Hide record ↑' : 'View record →'}
@@ -476,7 +477,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
       unit: lab.unit,
       referenceMin: lab.referenceMin != null ? String(lab.referenceMin) : '',
       referenceMax: lab.referenceMax != null ? String(lab.referenceMax) : '',
-      recordedAt: format(new Date(lab.recordedAt), 'yyyy-MM-dd'),
+      recordedAt: format(parseDate(lab.recordedAt), 'yyyy-MM-dd'),
       providerName: lab.providerName ?? '',
       notes: lab.notes ?? '',
     });
@@ -490,7 +491,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
       value: String(vital.value),
       value2: vital.value2 != null ? String(vital.value2) : '',
       unit: vital.unit,
-      recordedAt: format(new Date(vital.recordedAt), 'yyyy-MM-dd'),
+      recordedAt: format(parseDate(vital.recordedAt), 'yyyy-MM-dd'),
       notes: vital.notes ?? '',
     });
     setVitalDialog(true);
@@ -501,7 +502,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
     setImagingForm({
       studyType: study.studyType,
       bodyPart: study.bodyPart,
-      studyDate: format(new Date(study.studyDate), 'yyyy-MM-dd'),
+      studyDate: format(parseDate(study.studyDate), 'yyyy-MM-dd'),
       facility: study.facility ?? '',
       radiologist: study.radiologist ?? '',
       providerName: study.providerName ?? '',
@@ -512,9 +513,9 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
   };
 
   // Apply the result filter (status applies to labs only; date range applies to all three)
-  const filteredLabs = labs.filter((l) => isWithinBounds(new Date(l.recordedAt), dateBounds) && matchesStatusFilter(l, statusFilter));
-  const filteredVitals = vitals.filter((v) => isWithinBounds(new Date(v.recordedAt), dateBounds));
-  const filteredImaging = imaging.filter((s) => isWithinBounds(new Date(s.studyDate), dateBounds));
+  const filteredLabs = labs.filter((l) => isWithinBounds(parseDate(l.recordedAt), dateBounds) && matchesStatusFilter(l, statusFilter));
+  const filteredVitals = vitals.filter((v) => isWithinBounds(parseDate(v.recordedAt), dateBounds));
+  const filteredImaging = imaging.filter((s) => isWithinBounds(parseDate(s.studyDate), dateBounds));
 
   // Group vitals by type for trend charts
   const vitalGroups = filteredVitals.reduce<Partial<Record<VitalType, Vital[]>>>((acc, v) => {
@@ -537,7 +538,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
   }, {});
   const flaggedTestNames = Object.entries(allLabGroups)
     .filter(([, items]) => {
-      const latest = items.reduce((a, b) => new Date(a.recordedAt) > new Date(b.recordedAt) ? a : b);
+      const latest = items.reduce((a, b) => parseDate(a.recordedAt) > parseDate(b.recordedAt) ? a : b);
       return latest.isFlagged;
     })
     .map(([testName]) => testName)
@@ -697,8 +698,8 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {(Object.keys(vitalGroups) as VitalType[]).map((type) => {
-                  const items = vitalGroups[type]!.sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
-                  const chartData = items.map((v) => ({ date: format(new Date(v.recordedAt), 'MMM d'), value: v.value, value2: v.value2 }));
+                  const items = vitalGroups[type]!.sort((a, b) => parseDate(a.recordedAt).getTime() - parseDate(b.recordedAt).getTime());
+                  const chartData = items.map((v) => ({ date: format(parseDate(v.recordedAt), 'MMM d'), value: v.value, value2: v.value2 }));
 
                   return (
                     <div key={type} className="rounded-lg border bg-white p-3">
@@ -731,7 +732,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                               {type === 'BLOOD_PRESSURE' && v.value2 ? `${v.value}/${v.value2}` : v.value} {v.unit}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-400">{format(new Date(v.recordedAt), 'MMM d, yyyy')}</span>
+                              <span className="text-xs text-gray-400">{format(parseDate(v.recordedAt), 'MMM d, yyyy')}</span>
                               <button type="button" onClick={() => openEditVital(v)} className="p-1 rounded text-gray-400 hover:text-gray-600 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
                               <button type="button" onClick={() => deleteVital(v.id)} className="p-1 rounded text-[#9b2c2c] hover:text-[#7a1f1f] transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
                             </div>
@@ -753,8 +754,8 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
             ) : (
               <div className="space-y-4">
                 {sortedLabEntries.map(([testName, items]) => {
-                  const sorted = items.sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
-                  const chartData = sorted.map((l) => ({ date: format(new Date(l.recordedAt), 'MMM d'), value: l.value }));
+                  const sorted = items.sort((a, b) => parseDate(a.recordedAt).getTime() - parseDate(b.recordedAt).getTime());
+                  const chartData = sorted.map((l) => ({ date: format(parseDate(l.recordedAt), 'MMM d'), value: l.value }));
                   const latest = sorted[sorted.length - 1];
                   const latestStatus = getLabStatus(latest.value, latest.referenceMin, latest.referenceMax, latest.isFlagged);
                   return (
@@ -824,7 +825,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                             <span className="text-xs text-gray-500">— {toTitleCase(study.bodyPart)}</span>
                           </div>
                           <div className="flex flex-wrap gap-2 text-xs text-gray-400">
-                            <span>{format(new Date(study.studyDate), 'MMM d, yyyy')}</span>
+                            <span>{format(parseDate(study.studyDate), 'MMM d, yyyy')}</span>
                             {study.facility && <span>{study.facility}</span>}
                             {study.radiologist && <span>Read by {study.radiologist}</span>}
                             {study.providerName && <span>Ordered by {study.providerName}</span>}
@@ -860,8 +861,8 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                     <h2 className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-3">Vitals</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       {(Object.keys(vitalGroups) as VitalType[]).map((type) => {
-                        const items = vitalGroups[type]!.sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
-                        const chartData = items.map((v) => ({ date: format(new Date(v.recordedAt), 'MMM d'), value: v.value, value2: v.value2 }));
+                        const items = vitalGroups[type]!.sort((a, b) => parseDate(a.recordedAt).getTime() - parseDate(b.recordedAt).getTime());
+                        const chartData = items.map((v) => ({ date: format(parseDate(v.recordedAt), 'MMM d'), value: v.value, value2: v.value2 }));
                         return (
                           <div key={type} className="rounded-lg border bg-white p-4">
                             <div className="flex items-center justify-between mb-3">
@@ -893,7 +894,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                                     {type === 'BLOOD_PRESSURE' && v.value2 ? `${v.value}/${v.value2}` : v.value} {v.unit}
                                   </span>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-400">{format(new Date(v.recordedAt), 'MMM d, yyyy')}</span>
+                                    <span className="text-xs text-gray-400">{format(parseDate(v.recordedAt), 'MMM d, yyyy')}</span>
                                     <button type="button" onClick={() => openEditVital(v)} className="p-1 rounded text-gray-400 hover:text-gray-600 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
                                     <button type="button" onClick={() => deleteVital(v.id)} className="p-1 rounded text-[#9b2c2c] hover:text-[#7a1f1f] transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
                                   </div>
@@ -911,8 +912,8 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                     <h2 className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-3">Lab Results</h2>
                     <div className="space-y-4">
                       {sortedLabEntries.map(([testName, items]) => {
-                        const sorted = items.sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
-                        const chartData = sorted.map((l) => ({ date: format(new Date(l.recordedAt), 'MMM d'), value: l.value }));
+                        const sorted = items.sort((a, b) => parseDate(a.recordedAt).getTime() - parseDate(b.recordedAt).getTime());
+                        const chartData = sorted.map((l) => ({ date: format(parseDate(l.recordedAt), 'MMM d'), value: l.value }));
                         const latest = sorted[sorted.length - 1];
                         const latestStatus = getLabStatus(latest.value, latest.referenceMin, latest.referenceMax, latest.isFlagged);
                         return (
@@ -977,7 +978,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                                   <span className="text-xs text-gray-500">— {toTitleCase(study.bodyPart)}</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2 text-xs text-gray-400">
-                                  <span>{format(new Date(study.studyDate), 'MMM d, yyyy')}</span>
+                                  <span>{format(parseDate(study.studyDate), 'MMM d, yyyy')}</span>
                                   {study.facility && <span>{study.facility}</span>}
                                   {study.radiologist && <span>Read by {study.radiologist}</span>}
                                   {study.providerName && <span>Ordered by {study.providerName}</span>}
