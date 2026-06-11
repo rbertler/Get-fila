@@ -21,6 +21,12 @@ import providersRoutes from './routes/providers.js';
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 
+// Express 4 does not forward async route errors to the error middleware —
+// without this, any rejection in an async handler kills the whole process.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason instanceof Error ? reason.stack : reason);
+});
+
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },

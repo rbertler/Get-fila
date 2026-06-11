@@ -206,7 +206,14 @@ router.post(
         ? (recordTypeRaw as RecordType)
         : 'OTHER';
 
-    const stored = await saveFile(req.file.buffer, req.file.originalname, req.file.mimetype);
+    let stored;
+    try {
+      stored = await saveFile(req.file.buffer, req.file.originalname, req.file.mimetype);
+    } catch (err) {
+      console.error('[records] saveFile failed:', err);
+      res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to store file' });
+      return;
+    }
     const extractedText = await extractTextFromPdf(req.file.buffer);
 
     const providerName: string | undefined = req.body.providerName ?? undefined;
