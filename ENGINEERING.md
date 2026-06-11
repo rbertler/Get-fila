@@ -304,6 +304,10 @@ All user-owned models have `onDelete: Cascade` — deleting a user removes all t
 | `JWT_SECRET` | ✅ | Secret for signing JWTs (use a long random string) |
 | `ANTHROPIC_API_KEY` | ✅ | Claude API key for AI extraction and insights |
 | `NODE_ENV` | ✅ | `development` or `production` |
+| `SUPABASE_URL` | ✅ prod | Supabase project URL (dashboard → Project Settings → API). Required in production: uploaded files go to Supabase Storage. When unset, files fall back to local disk (`UPLOAD_DIR`) — fine locally, but Render's disk is ephemeral and wipes on every deploy/restart. |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ prod | Supabase service role key (same page). Server-side only — never expose to the client. |
+| `SUPABASE_STORAGE_BUCKET` | — | Storage bucket name (default: `records`; created automatically) |
+| `UPLOAD_DIR` | — | Local-disk fallback directory (default: `./uploads`) |
 | `PORT` | — | Server port (Render sets this automatically; defaults to 3001) |
 | `JWT_EXPIRES_IN` | — | Token expiry, e.g. `7d` (default: `7d`) |
 | `GOOGLE_CLIENT_ID` | — | Google OAuth client ID (required for Google sync) |

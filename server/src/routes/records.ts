@@ -4,12 +4,11 @@ import { z } from 'zod';
 import { RecordType } from '@prisma/client';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../utils/prisma.js';
-import { saveFile, deleteFile, getFilePath } from '../services/storage.js';
+import { saveFile, deleteFile, readFile } from '../services/storage.js';
 import { extractTextFromPdf } from '../services/pdfParser.js';
 import { parseLabResultsFromText, parseConditionsFromText, parseImagingFromText, parseProviderFromText, parseOrderingProviderFromText, parseProviderFromFileName, normalizeLabTestName, canonicalizeLabTestName, isOrganizationProviderName } from '../services/recordExtractor.js';
 import { extractWithAI } from '../services/aiExtractor.js';
 import { normalizeProviderKey } from './providers.js';
-import fs from 'fs';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -566,13 +565,12 @@ router.get('/:id/download', async (req: AuthRequest, res: Response): Promise<voi
   }
 
   try {
-    const filePath = await getFilePath(record.storagePath);
+    const buffer = await readFile(record.storagePath);
     res.setHeader('Content-Disposition', `attachment; filename="${record.fileName}"`);
     res.setHeader('Content-Type', record.mimeType);
-    const stream = fs.createReadStream(filePath);
-    stream.pipe(res);
+    res.send(buffer);
   } catch {
-    res.status(404).json({ error: 'File not found on disk' });
+    res.status(404).json({ error: 'File not found in storage' });
   }
 });
 
@@ -586,13 +584,12 @@ router.get('/:id/view', async (req: AuthRequest, res: Response): Promise<void> =
   }
 
   try {
-    const filePath = await getFilePath(record.storagePath);
+    const buffer = await readFile(record.storagePath);
     res.setHeader('Content-Disposition', `inline; filename="${record.fileName}"`);
     res.setHeader('Content-Type', record.mimeType);
-    const stream = fs.createReadStream(filePath);
-    stream.pipe(res);
+    res.send(buffer);
   } catch {
-    res.status(404).json({ error: 'File not found on disk' });
+    res.status(404).json({ error: 'File not found in storage' });
   }
 });
 

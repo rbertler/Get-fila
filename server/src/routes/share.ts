@@ -4,9 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../utils/prisma.js';
 import { generateShareReport } from '../services/reportGenerator.js';
-import { saveFile } from '../services/storage.js';
-import fs from 'fs';
-import path from 'path';
+import { saveFile, readFile } from '../services/storage.js';
 
 const router = Router();
 
@@ -112,10 +110,10 @@ router.get('/view/:token/report', async (req: Request, res: Response): Promise<v
   }
 
   try {
+    const buffer = await readFile(shareToken.reportPath);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename="health-summary.pdf"');
-    const stream = fs.createReadStream(shareToken.reportPath);
-    stream.pipe(res);
+    res.send(buffer);
   } catch {
     res.status(404).json({ error: 'Report file not found' });
   }
