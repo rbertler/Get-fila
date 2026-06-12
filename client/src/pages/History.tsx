@@ -552,12 +552,15 @@ function EventDetailModal({
               <div className="flex items-center gap-2 mb-2">
                 <Lightbulb className="h-4 w-4 text-accent" />
                 <span className="text-sm font-semibold text-accent uppercase tracking-wide">Health Insight</span>
-                <span className={`ml-auto text-xs px-2 py-0.5 rounded-full font-medium ${
-                  insight.confidence === 'high' ? 'bg-green-100 text-green-700'
-                  : insight.confidence === 'moderate' ? 'bg-amber-100 text-amber-700'
-                  : 'bg-gray-100 text-gray-600'
-                }`}>
-                  {insight.confidence} confidence
+                <span
+                  className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium"
+                  style={
+                    insight.confidence === 'high'     ? { background: '#2b4257', color: '#ffffff' }
+                    : insight.confidence === 'moderate' ? { background: '#6da7cc', color: '#ffffff' }
+                    : { background: '#e3ebf2', color: '#2b4257' }
+                  }
+                >
+                  {insight.confidence === 'high' ? 'Strong Pattern' : insight.confidence === 'moderate' ? 'Possible Pattern' : 'Weak Pattern'}
                 </span>
               </div>
               <p className="text-base font-medium text-gray-900 mb-1">{insight.title}</p>

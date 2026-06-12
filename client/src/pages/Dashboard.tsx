@@ -634,9 +634,9 @@ export function Dashboard() {
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Key Insights</p>
                       {(data.latestInsight.insights as InsightItem[]).slice(0, 2).map((insight, i) => {
                         const confidenceStyles: Record<string, { bg: string; text: string; dot: string }> = {
-                          high:     { bg: '#d4eeeb', text: '#2b4257', dot: '#5ba8a0' },
-                          moderate: { bg: '#d4eeeb', text: '#2b4257', dot: '#5ba8a0' },
-                          low:      { bg: '#d4eeeb', text: '#2b4257', dot: '#5ba8a0' },
+                          high:     { bg: '#2b4257', text: '#ffffff', dot: '#ffffff' },
+                          moderate: { bg: '#6da7cc', text: '#ffffff', dot: '#ffffff' },
+                          low:      { bg: '#e3ebf2', text: '#2b4257', dot: '#2b4257' },
                         };
                         const style = confidenceStyles[insight.confidence] ?? confidenceStyles.low;
                         return (
