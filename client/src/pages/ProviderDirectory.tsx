@@ -750,43 +750,29 @@ export function ProviderDirectory() {
               {showRecordViewer && !selected.isManual && (
                 <div className="rounded-lg border bg-white overflow-hidden">
                   {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50 flex-wrap gap-2">
-                    <p className="text-sm font-semibold text-gray-700">
-                      {loadingRecords ? 'Loading' : (linkedRecords[activeRecordIdx]?.fileName ?? 'Associated record')}
+                  <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50 gap-2">
+                    <p className="text-sm font-semibold text-gray-700 truncate min-w-0">
+                      {loadingRecords ? 'Loading…' : (linkedRecords[activeRecordIdx]?.fileName ?? 'Associated record')}
                     </p>
-                    <div className="flex items-center gap-2">
-                      {linkedRecords.length > 1 && linkedRecords.map((r, i) => (
+                    {numPages > 1 && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500 shrink-0">
                         <button
-                          key={r.id}
-                          onClick={() => switchRecord(i)}
-                          title={r.fileName}
-                          className={`text-xs px-2.5 py-1 rounded-md transition-colors max-w-[120px] truncate shrink-0 ${
-                            i === activeRecordIdx ? 'bg-primary/10 text-primary font-medium' : 'text-gray-500 hover:bg-gray-100'
-                          }`}
+                          onClick={() => setPageNumber(p => Math.max(1, p - 1))}
+                          disabled={pageNumber <= 1}
+                          className="p-1 rounded hover:bg-gray-200 disabled:opacity-30"
                         >
-                          {r.fileName}
+                          <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
-                      ))}
-                      {numPages > 1 && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500 ml-2">
-                          <button
-                            onClick={() => setPageNumber(p => Math.max(1, p - 1))}
-                            disabled={pageNumber <= 1}
-                            className="p-1 rounded hover:bg-gray-200 disabled:opacity-30"
-                          >
-                            <ChevronLeft className="h-3.5 w-3.5" />
-                          </button>
-                          <span>{pageNumber} / {numPages}</span>
-                          <button
-                            onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}
-                            disabled={pageNumber >= numPages}
-                            className="p-1 rounded hover:bg-gray-200 disabled:opacity-30"
-                          >
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                        <span>{pageNumber} / {numPages}</span>
+                        <button
+                          onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}
+                          disabled={pageNumber >= numPages}
+                          className="p-1 rounded hover:bg-gray-200 disabled:opacity-30"
+                        >
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* PDF canvas */}
