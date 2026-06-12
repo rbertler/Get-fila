@@ -145,13 +145,28 @@ function usePdfViewer(recordId: string | undefined) {
   const [open, setOpen] = useState(false);
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(1);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const [pdfContainerRef, pdfWidth] = usePdfWidth(24);
 
-  const handleView = () => {
+  useEffect(() => {
+    return () => { if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl); };
+  }, [pdfBlobUrl]);
+
+  const handleView = async () => {
     if (!recordId) return;
-    setOpen(o => !o);
+    const opening = !open;
+    setOpen(opening);
     setPage(1);
     setNumPages(0);
+    if (opening && !pdfBlobUrl) {
+      try {
+        const blob = await api.blob(`/records/${recordId}/view`);
+        setPdfBlobUrl(URL.createObjectURL(blob));
+      } catch {
+        setPdfError('Could not load PDF.');
+      }
+    }
   };
 
   const viewer = open && recordId ? (
@@ -168,14 +183,18 @@ function usePdfViewer(recordId: string | undefined) {
         </div>
       )}
       <div ref={pdfContainerRef} className="overflow-auto bg-gray-100 flex justify-center p-3 max-h-96">
-        <Document
-          file={`/api/records/${recordId}/view`}
-          onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPage(1); }}
-          loading={<div className="py-8 text-sm text-gray-400">Rendering…</div>}
-          error={<div className="py-8 text-sm text-red-400">Could not render PDF.</div>}
-        >
-          <Page pageNumber={page} width={pdfWidth} renderTextLayer renderAnnotationLayer />
-        </Document>
+        {pdfError ? (
+          <div className="py-8 text-sm text-red-400">{pdfError}</div>
+        ) : (
+          <Document
+            file={pdfBlobUrl}
+            onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPage(1); }}
+            loading={<div className="py-8 text-sm text-gray-400">Rendering…</div>}
+            error={<div className="py-8 text-sm text-red-400">Could not render PDF.</div>}
+          >
+            <Page pageNumber={page} width={pdfWidth} renderTextLayer renderAnnotationLayer />
+          </Document>
+        )}
       </div>
     </div>
   ) : null;

@@ -316,7 +316,19 @@ export function ProviderDirectory() {
   const [loadingRecords, setLoadingRecords] = useState(false);
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState(1);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const [pdfContainerRef, pdfWidth] = usePdfWidth(32);
+
+  useEffect(() => {
+    const activeId = linkedRecords[activeRecordIdx]?.id;
+    if (!activeId || !showRecordViewer) return;
+    setPdfBlobUrl(prev => { if (prev) URL.revokeObjectURL(prev); return null; });
+    setPdfError(null);
+    api.blob(`/records/${activeId}/view`)
+      .then(blob => setPdfBlobUrl(URL.createObjectURL(blob)))
+      .catch(() => setPdfError('Could not load PDF.'));
+  }, [linkedRecords[activeRecordIdx]?.id, showRecordViewer]);
 
   const loadLinkedRecords = async (provider: Provider) => {
     if (!provider.sourceRecordIds.length) return;
@@ -782,19 +794,23 @@ export function ProviderDirectory() {
                   )}
                   {!loadingRecords && linkedRecords[activeRecordIdx] && (
                     <div ref={pdfContainerRef} className="overflow-auto bg-gray-100 flex justify-center p-4">
-                      <Document
-                        file={`/api/records/${linkedRecords[activeRecordIdx].id}/view`}
-                        onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPageNumber(1); }}
-                        loading={<div className="py-12 text-sm text-gray-400">Rendering PDF</div>}
-                        error={<div className="py-12 text-sm text-red-400">Failed to render PDF.</div>}
-                      >
-                        <Page
-                          pageNumber={pageNumber}
-                          width={pdfWidth}
-                          renderTextLayer
-                          renderAnnotationLayer
-                        />
-                      </Document>
+                      {pdfError ? (
+                        <div className="py-12 text-sm text-red-400">{pdfError}</div>
+                      ) : (
+                        <Document
+                          file={pdfBlobUrl}
+                          onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPageNumber(1); }}
+                          loading={<div className="py-12 text-sm text-gray-400">Rendering PDF</div>}
+                          error={<div className="py-12 text-sm text-red-400">Could not render PDF.</div>}
+                        >
+                          <Page
+                            pageNumber={pageNumber}
+                            width={pdfWidth}
+                            renderTextLayer
+                            renderAnnotationLayer
+                          />
+                        </Document>
+                      )}
                     </div>
                   )}
                   {!loadingRecords && linkedRecords.length === 0 && (

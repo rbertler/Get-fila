@@ -305,7 +305,19 @@ export function Dashboard() {
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [pdfContainerRef, pdfWidth] = usePdfWidth(0);
+
+  useEffect(() => {
+    if (!previewRecord) {
+      setPdfBlobUrl(prev => { if (prev) URL.revokeObjectURL(prev); return null; });
+      return;
+    }
+    setPdfError(null);
+    api.blob(`/records/${previewRecord.id}/view`)
+      .then(blob => setPdfBlobUrl(URL.createObjectURL(blob)))
+      .catch(() => setPdfError('Could not load PDF.'));
+  }, [previewRecord?.id]);
 
   const openPreview = (r: DashboardRecord) => {
     setPreviewRecord(r);
@@ -811,13 +823,14 @@ export function Dashboard() {
 
           {/* PDF preview area */}
           <div ref={pdfContainerRef} className="flex-1 overflow-auto bg-gray-100 flex justify-center min-h-0">
-            {previewRecord && (
+            {pdfError ? (
+              <div className="py-12 px-6 text-sm text-red-400 text-center">{pdfError}</div>
+            ) : (
               <Document
-                file={`/api/records/${previewRecord.id}/view`}
-                onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPageNumber(1); setPdfError(null); }}
-                onLoadError={(err) => setPdfError(err.message)}
+                file={pdfBlobUrl}
+                onLoadSuccess={({ numPages }) => { setNumPages(numPages); setPageNumber(1); }}
                 loading={<div className="flex items-center justify-center h-48 text-sm text-gray-400">Loading preview…</div>}
-                error={<div className="py-12 px-6 text-sm text-red-400 text-center">{pdfError ?? 'Could not render preview.'}</div>}
+                error={<div className="py-12 px-6 text-sm text-red-400 text-center">Could not render preview.</div>}
                 className="py-4"
               >
                 <Page pageNumber={pageNumber} width={pdfWidth} renderTextLayer renderAnnotationLayer />
