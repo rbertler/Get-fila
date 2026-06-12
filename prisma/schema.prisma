@@ -64,6 +64,7 @@ model MedicalRecord {
   mimeType      String
   storagePath   String
   extractedText String?
+  aiSummary     String?
   recordType    RecordType
   recordDate    DateTime?
   providerName  String?

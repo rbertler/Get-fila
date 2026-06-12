@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../utils/prisma.js';
-import { generateInsights, FocusedScope } from '../services/insightGenerator.js';
+import { generateInsights, generateThematic, answerHealthQuestion, FocusedScope, ChatMessage } from '../services/insightGenerator.js';
 import { generateInsightPdf } from '../services/insightPdfGenerator.js';
 import { saveFile } from '../services/storage.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -91,6 +91,38 @@ router.post('/generate/focused', async (req: AuthRequest, res: Response): Promis
       : message.includes('ANTHROPIC_API_KEY') ? 503
       : 500;
     res.status(status).json({ error: message });
+  }
+});
+
+router.post('/generate/thematic', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { theme } = req.body as { theme?: string };
+    if (!theme || typeof theme !== 'string' || !theme.trim()) {
+      res.status(400).json({ error: 'A theme is required' });
+      return;
+    }
+    const reportId = await generateThematic(req.userId!, theme.trim());
+    const report = await prisma.healthInsightReport.findUnique({ where: { id: reportId } });
+    res.status(201).json({ report });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to generate thematic analysis';
+    const status = message.includes('Insufficient') ? 400 : message.includes('ANTHROPIC_API_KEY') ? 503 : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
+router.post('/chat', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { message, history = [] } = req.body as { message?: string; history?: ChatMessage[] };
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      res.status(400).json({ error: 'message is required' });
+      return;
+    }
+    const reply = await answerHealthQuestion(req.userId!, message.trim(), history);
+    res.json({ reply });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to answer question';
+    res.status(500).json({ error: message });
   }
 });
 

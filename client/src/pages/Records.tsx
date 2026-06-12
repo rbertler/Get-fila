@@ -915,6 +915,9 @@ export function Records() {
                     </span>
                   )}
                 </div>
+                {r.aiSummary && (
+                  <p className="mt-1.5 text-xs text-gray-500 leading-relaxed line-clamp-2">{r.aiSummary}</p>
+                )}
               </button>
               <div className="flex items-center shrink-0" onClick={e => e.stopPropagation()}>
                 <button onClick={() => openEdit(r)} title="Edit" className="p-1.5 rounded hover:bg-gray-100 transition-colors">

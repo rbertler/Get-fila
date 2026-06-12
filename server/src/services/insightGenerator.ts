@@ -460,3 +460,156 @@ export async function generateInsights(userId: string, scope?: FocusedScope): Pr
   console.log(`[insightGenerator] Report created id=${report.id} insights=${sanitisedInsights.length} gaps=${parsed.gaps.length}`);
   return report.id;
 }
+
+// ── Thematic analysis ─────────────────────────────────────────────────────────
+
+const THEMATIC_SYSTEM_PROMPT = `You are Fila's Health Intelligence engine. Your task is to perform a thematic health analysis. The user has selected a health theme, and you must group all relevant entries from their health record into that theme, then provide targeted analysis.
+
+You MUST respond with ONLY a valid JSON object — no markdown, no explanation, no code fences. Just raw JSON.
+
+The JSON must match this exact schema:
+{
+  "summary": string,
+  "insights": [
+    {
+      "title": string,
+      "description": string,
+      "confidence": "low" | "moderate" | "high",
+      "supportingEvidence": [{ "text": string, "source": string, "date": string }],
+      "suggestedDiscussion": string,
+      "relatedConditions": string[]
+    }
+  ],
+  "gaps": string[]
+}
+
+FIELD DEFINITIONS (same as full analysis):
+- summary: 2–4 sentences summarizing what the data shows for the selected theme. Be specific about what you found.
+- insights[]: 2–5 patterns within this theme only. Focus on trends, connections, and unanswered questions relevant to this theme.
+- gaps[]: 2–4 gaps specific to this theme — missing tests, specialists, or data that would complete the picture.
+
+CRITICAL RULES:
+1. Only include data that is clearly relevant to the selected theme. Do not pad with unrelated data.
+2. Write at a 6th grade reading level. Be warm, clear, and empowering.
+3. Never state a diagnosis. Help the patient advocate for themselves.
+4. If no relevant data exists for the theme, return a summary explaining this and empty insights/gaps arrays.
+5. suggestedDiscussion: Write as first-person patient statements/questions. Do NOT start sentences with "I" (use "My..." or "It seems...").`;
+
+export async function generateThematic(userId: string, theme: string): Promise<string> {
+  const client = getClient();
+
+  const healthSummary = await buildHealthSummary(userId);
+  const userMessage = `Please analyse this patient's health record and generate a thematic analysis focused specifically on the theme: "${theme}".\n\nOnly include data and insights that are clearly relevant to ${theme}.\n\n${healthSummary}`;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-5',
+    max_tokens: 3000,
+    system: THEMATIC_SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: userMessage }],
+  });
+
+  const content = response.content[0];
+  if (content.type !== 'text') throw new Error('Unexpected response type from Claude');
+
+  const raw = content.text.trim().replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+  let parsed: GeneratedReport;
+  try {
+    parsed = JSON.parse(raw) as GeneratedReport;
+  } catch {
+    throw new Error('Claude returned invalid JSON for thematic report');
+  }
+
+  if (!parsed.summary || !Array.isArray(parsed.insights) || !Array.isArray(parsed.gaps)) {
+    throw new Error('Claude response missing required fields');
+  }
+
+  const validConfidence = new Set(['low', 'moderate', 'high']);
+  const sanitisedInsights: InsightItem[] = parsed.insights.map((ins) => ({
+    title: String(ins.title ?? '').trim(),
+    confidence: validConfidence.has(ins.confidence) ? ins.confidence : 'low',
+    supportingEvidence: (ins.supportingEvidence ?? []).map((ev) => ({
+      text: String(ev.text ?? '').trim(),
+      source: String(ev.source ?? '').trim(),
+      date: String(ev.date ?? '').trim(),
+    })),
+    suggestedDiscussion: String(ins.suggestedDiscussion ?? '').trim(),
+    relatedConditions: (ins.relatedConditions ?? []).map((c) => String(c).trim()),
+  }));
+
+  const report = await prisma.healthInsightReport.create({
+    data: {
+      userId,
+      summary: String(parsed.summary).trim(),
+      insights: sanitisedInsights as unknown as Prisma.InputJsonValue,
+      gaps: parsed.gaps.map((g) => String(g).trim()) as unknown as Prisma.InputJsonValue,
+      reportType: 'thematic',
+      scopeLabel: theme,
+    },
+  });
+
+  console.log(`[insightGenerator] Thematic report created id=${report.id} theme="${theme}"`);
+  return report.id;
+}
+
+// ── Per-record AI summary ─────────────────────────────────────────────────────
+
+export async function generateRecordSummary(extractedText: string, recordType: string): Promise<string> {
+  if (!extractedText || extractedText.trim().length < 50) {
+    return '';
+  }
+  const client = getClient();
+  const truncated = extractedText.slice(0, 6000);
+
+  const systemPrompt = `You summarize medical documents for patients. Write a 1–3 sentence plain-language summary of what this ${recordType.toLowerCase().replace(/_/g, ' ')} document contains. Focus on the most important finding or purpose of the document. Write at a 6th grade reading level. Do NOT include diagnoses. Do NOT add any preamble — just the summary sentences.`;
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 200,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: truncated }],
+  });
+
+  const content = response.content[0];
+  if (content.type !== 'text') return '';
+  return content.text.trim();
+}
+
+// ── Health Q&A chat ───────────────────────────────────────────────────────────
+
+export type ChatMessage = { role: 'user' | 'assistant'; content: string };
+
+export async function answerHealthQuestion(
+  userId: string,
+  message: string,
+  history: ChatMessage[],
+): Promise<string> {
+  const client = getClient();
+  let healthContext: string;
+  try {
+    healthContext = await buildHealthSummary(userId);
+  } catch {
+    healthContext = '(No health data available yet.)';
+  }
+
+  const systemPrompt = `You are Fila's personal health assistant. You have access to this patient's health record summary below. Answer their questions in plain language (6th grade reading level). Be warm, concise, and helpful. Always recommend they confirm findings with their healthcare provider. Do NOT state diagnoses. If the question is unrelated to their health data, gently redirect.
+
+--- PATIENT HEALTH RECORD ---
+${healthContext}
+--- END OF RECORD ---`;
+
+  const messages = [
+    ...history.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+    { role: 'user' as const, content: message },
+  ];
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 600,
+    system: systemPrompt,
+    messages,
+  });
+
+  const content = response.content[0];
+  if (content.type !== 'text') throw new Error('Unexpected response type');
+  return content.text.trim();
+}

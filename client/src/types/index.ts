@@ -71,6 +71,7 @@ export interface MedicalRecord {
   recordDate?: string;
   providerName?: string;
   notes?: string;
+  aiSummary?: string;
   createdAt: string;
 }
 
@@ -140,7 +141,7 @@ export interface HealthInsightReport {
   insights: InsightItem[];
   gaps: string[];
   generatedAt: string;
-  reportType: 'general' | 'focused';
+  reportType: 'general' | 'focused' | 'thematic';
   scopeLabel?: string;
 }
 

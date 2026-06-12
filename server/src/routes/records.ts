@@ -8,6 +8,7 @@ import { saveFile, deleteFile, readFile } from '../services/storage.js';
 import { extractTextFromPdf } from '../services/pdfParser.js';
 import { parseLabResultsFromText, parseConditionsFromText, parseImagingFromText, parseProviderFromText, parseOrderingProviderFromText, parseProviderFromFileName, parseDateFromFileName, normalizeLabTestName, canonicalizeLabTestName, isOrganizationProviderName } from '../services/recordExtractor.js';
 import { extractWithAI } from '../services/aiExtractor.js';
+import { generateRecordSummary } from '../services/insightGenerator.js';
 import { normalizeProviderKey } from './providers.js';
 
 const router = Router();
@@ -487,6 +488,13 @@ router.post(
           medicationsAdded++;
         }
       }
+
+      // Generate a short AI summary for the record card (fire-and-forget, non-blocking)
+      generateRecordSummary(extractedText, recordType).then(async (aiSummary) => {
+        if (aiSummary) {
+          await prisma.medicalRecord.update({ where: { id: record.id }, data: { aiSummary } });
+        }
+      }).catch((err) => console.error('[records] aiSummary generation failed', err));
 
       res.status(201).json({ record, extracted: { labs: labsAdded, medications: medicationsAdded, conditions: conditionsAdded, imaging: imagingAdded, vitals: vitalsAdded, providers: providersAdded } });
       return;

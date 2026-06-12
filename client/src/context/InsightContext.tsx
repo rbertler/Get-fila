@@ -14,6 +14,7 @@ interface InsightContextValue {
   lastReport: HealthInsightReport | null;
   generate: () => Promise<HealthInsightReport | null>;
   generateFocused: (scope: FocusedScope) => Promise<HealthInsightReport | null>;
+  generateThematic: (theme: string) => Promise<HealthInsightReport | null>;
   clearLastReport: () => void;
 }
 
@@ -55,10 +56,26 @@ export function InsightProvider({ children }: { children: ReactNode }) {
     }
   }, [generating]);
 
+  const generateThematic = useCallback(async (theme: string): Promise<HealthInsightReport | null> => {
+    if (generating) return null;
+    setGenerating(true);
+    setLastReport(null);
+    try {
+      const data = await api.post<{ report: HealthInsightReport }>('/insights/generate/thematic', { theme });
+      setLastReport(data.report);
+      toast({ variant: 'success', title: 'Thematic Analysis ready', description: `Analysis for "${theme}" has finished.` });
+      return data.report;
+    } catch (err: any) {
+      throw new Error(err?.message ?? 'Failed to generate thematic analysis. Please try again.');
+    } finally {
+      setGenerating(false);
+    }
+  }, [generating]);
+
   const clearLastReport = useCallback(() => setLastReport(null), []);
 
   return (
-    <InsightContext.Provider value={{ generating, lastReport, generate, generateFocused, clearLastReport }}>
+    <InsightContext.Provider value={{ generating, lastReport, generate, generateFocused, generateThematic, clearLastReport }}>
       {children}
     </InsightContext.Provider>
   );

@@ -1,6 +1,6 @@
 import { parseDate } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import { Brain, Clock, AlertCircle, Lightbulb, BookOpen, Download, Share2, FileText, Copy, Check, X, SlidersHorizontal, ChevronDown, ChevronRight, Search, Trash2 } from 'lucide-react';
+import { Brain, Clock, AlertCircle, Lightbulb, BookOpen, Download, Share2, FileText, Copy, Check, X, SlidersHorizontal, ChevronDown, ChevronRight, Search, Trash2, Tag } from 'lucide-react';
 import { useInsight, FocusedScope } from '@/context/InsightContext';
 import { api } from '@/api/client';
 import { HealthInsightReport, InsightItem, MedicalHistoryEntry, LabResult, ImagingStudy } from '@/types';
@@ -395,6 +395,81 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
   );
 }
 
+// ── Thematic Analysis Dialog ──────────────────────────────────────────────────
+
+const PRESET_THEMES = [
+  'GI Health', 'Hormones & Endocrine', 'Cardiovascular', 'Mental Health',
+  'Musculoskeletal', 'Respiratory', 'Neurological', 'Immune & Autoimmune',
+  'Reproductive Health', 'Kidney & Urinary', 'Skin', 'Metabolic & Diabetes',
+];
+
+function ThematicAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun: (theme: string) => void }) {
+  const [selected, setSelected] = useState('');
+  const [custom, setCustom] = useState('');
+  const activeTheme = selected === '__custom__' ? custom.trim() : selected;
+
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Tag className="h-4 w-4" style={{ color: '#6da7cc' }} />
+            Thematic Analysis
+          </DialogTitle>
+          <p className="text-sm text-gray-500 mt-0.5">Choose a health theme to analyse.</p>
+        </DialogHeader>
+
+        <div className="flex flex-wrap gap-2 pt-1">
+          {PRESET_THEMES.map((theme) => (
+            <button
+              key={theme}
+              onClick={() => setSelected(theme)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+              style={selected === theme
+                ? { background: '#2b4257', color: '#fff', borderColor: '#2b4257' }
+                : { background: '#fff', color: '#374151', borderColor: '#d1d5db' }}
+            >
+              {theme}
+            </button>
+          ))}
+          <button
+            onClick={() => setSelected('__custom__')}
+            className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+            style={selected === '__custom__'
+              ? { background: '#2b4257', color: '#fff', borderColor: '#2b4257' }
+              : { background: '#fff', color: '#374151', borderColor: '#d1d5db' }}
+          >
+            Custom…
+          </button>
+        </div>
+
+        {selected === '__custom__' && (
+          <input
+            autoFocus
+            type="text"
+            placeholder="e.g. Sleep, Fertility, Chronic Pain"
+            value={custom}
+            onChange={(e) => setCustom(e.target.value)}
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6da7cc]/40"
+          />
+        )}
+
+        <div className="flex gap-2 pt-2 border-t">
+          <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
+          <Button
+            className="flex-1 gap-2 text-white"
+            disabled={!activeTheme}
+            onClick={() => activeTheme && onRun(activeTheme)}
+          >
+            <Brain className="h-4 w-4" />
+            Analyse
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function HealthIntelligence() {
@@ -407,9 +482,10 @@ export function HealthIntelligence() {
   const [savedReportIds, setSavedReportIds] = useState<Set<string>>(new Set());
   const [focusedDialogOpen, setFocusedDialogOpen] = useState(false);
   const [analysisTypeDialogOpen, setAnalysisTypeDialogOpen] = useState(false);
+  const [thematicDialogOpen, setThematicDialogOpen] = useState(false);
   const [deletingReportId, setDeletingReportId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const { generating, lastReport, generate, generateFocused, clearLastReport } = useInsight();
+  const { generating, lastReport, generate, generateFocused, generateThematic, clearLastReport } = useInsight();
 
   useEffect(() => {
     api.get<{ reports: HealthInsightReport[]; canGenerate: boolean }>('/insights')
@@ -445,6 +521,16 @@ export function HealthIntelligence() {
       await generateFocused(scope);
     } catch (err: any) {
       const msg = err?.message ?? 'Failed to generate focused insights. Please try again.';
+      toast({ variant: 'destructive', title: 'Analysis failed', description: msg });
+    }
+  };
+
+  const handleGenerateThematic = async (theme: string) => {
+    setThematicDialogOpen(false);
+    try {
+      await generateThematic(theme);
+    } catch (err: any) {
+      const msg = err?.message ?? 'Failed to generate thematic analysis. Please try again.';
       toast({ variant: 'destructive', title: 'Analysis failed', description: msg });
     }
   };
@@ -557,9 +643,11 @@ export function HealthIntelligence() {
                       className="text-xs shrink-0"
                       style={r.reportType === 'focused'
                         ? { background: '#e3ebf2', color: '#2b4257', border: 'none' }
+                        : r.reportType === 'thematic'
+                        ? { background: '#d4eeeb', color: '#1a5c55', border: 'none' }
                         : { background: '#2b4257', color: '#fff', border: 'none' }}
                     >
-                      {r.reportType === 'focused' ? 'Focused' : 'Full'}
+                      {r.reportType === 'focused' ? 'Focused' : r.reportType === 'thematic' ? 'Themed' : 'Full'}
                     </Badge>
                   </div>
                 </button>
@@ -573,7 +661,7 @@ export function HealthIntelligence() {
               {/* Header row: date label + action buttons */}
               <div className="mb-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
-                  {selected.reportType === 'focused' ? 'Focused Analysis · ' : ''}{format(parseDate(selected.generatedAt), 'MMMM d, yyyy')}
+                  {selected.reportType === 'focused' ? 'Focused Analysis · ' : selected.reportType === 'thematic' ? 'Thematic Analysis · ' : ''}{format(parseDate(selected.generatedAt), 'MMMM d, yyyy')}
                 </p>
                 {selected.scopeLabel && (
                   <p className="text-xs text-gray-400 mb-1.5">{selected.scopeLabel}</p>
@@ -649,6 +737,13 @@ export function HealthIntelligence() {
         />
       )}
 
+      {thematicDialogOpen && (
+        <ThematicAnalysisDialog
+          onClose={() => setThematicDialogOpen(false)}
+          onRun={handleGenerateThematic}
+        />
+      )}
+
       <Dialog open={analysisTypeDialogOpen} onOpenChange={setAnalysisTypeDialogOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -673,6 +768,15 @@ export function HealthIntelligence() {
                 <SlidersHorizontal className="h-4 w-4 text-primary" /> Focused Analysis
               </div>
               <p className="text-xs text-gray-500">Focus on a specific condition, time range, or category for a targeted report.</p>
+            </button>
+            <button
+              className="text-left rounded-lg border p-4 hover:border-primary hover:bg-primary/5 transition-colors"
+              onClick={() => { setAnalysisTypeDialogOpen(false); setThematicDialogOpen(true); }}
+            >
+              <div className="flex items-center gap-2 font-semibold text-sm text-gray-900 mb-1">
+                <Tag className="h-4 w-4 text-primary" /> Thematic Analysis
+              </div>
+              <p className="text-xs text-gray-500">Pick a health theme (e.g. GI, Hormones) and AI groups all related entries for a focused view.</p>
             </button>
           </div>
         </DialogContent>

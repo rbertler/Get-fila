@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext, useAuthState, useAuth } from './hooks/useAuth';
 import { Layout } from './components/Layout';
+import { HealthChatBubble } from './components/HealthChatBubble';
 import { SyncProvider } from './context/SyncContext';
 import { InsightProvider } from './context/InsightContext';
 import { Login } from './pages/Login';
@@ -29,7 +30,12 @@ function ProtectedLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  return <Layout />;
+  return (
+    <>
+      <Layout />
+      <HealthChatBubble />
+    </>
+  );
 }
 
 export default function App() {
