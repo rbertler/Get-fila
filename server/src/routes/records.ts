@@ -624,18 +624,24 @@ router.delete('/:id', async (req: AuthRequest, res: Response): Promise<void> => 
     await prisma.medicalHistoryEntry.deleteMany({ where: { userId: req.userId!, sourceRecordId: record.id } });
     await prisma.imagingStudy.deleteMany({ where: { userId: req.userId!, sourceRecordId: record.id } });
     await prisma.vital.deleteMany({ where: { userId: req.userId!, sourceRecordId: record.id } });
+  }
 
-    // For providers: remove this record from sourceRecordIds; delete provider if it has no remaining sources and isn't manual
-    const linkedProviders = await prisma.provider.findMany({
-      where: { userId: req.userId!, sourceRecordIds: { has: record.id } },
-    });
-    for (const provider of linkedProviders) {
-      const remaining = provider.sourceRecordIds.filter(id => id !== record.id);
-      if (remaining.length === 0 && !provider.isManual) {
-        await prisma.provider.delete({ where: { id: provider.id } });
-      } else {
-        await prisma.provider.update({ where: { id: provider.id }, data: { sourceRecordIds: remaining } });
-      }
+  // Always remove this record's ID from any provider's sourceRecordIds — even when
+  // deleteAssociated is false, dead IDs must not accumulate (they would prevent the
+  // provider from being deleted when the last real record is eventually removed).
+  const allRecordIds = new Set(
+    (await prisma.medicalRecord.findMany({ where: { userId: req.userId! }, select: { id: true } })).map(r => r.id)
+  );
+  const linkedProviders = await prisma.provider.findMany({
+    where: { userId: req.userId!, sourceRecordIds: { has: record.id } },
+  });
+  for (const provider of linkedProviders) {
+    // Strip the deleted record AND any other already-deleted record IDs
+    const remaining = provider.sourceRecordIds.filter(id => id !== record.id && allRecordIds.has(id));
+    if (remaining.length === 0 && !provider.isManual && deleteAssociated) {
+      await prisma.provider.delete({ where: { id: provider.id } });
+    } else {
+      await prisma.provider.update({ where: { id: provider.id }, data: { sourceRecordIds: remaining } });
     }
   }
 
