@@ -104,11 +104,123 @@ export function parseLabResultsFromText(text: string, recordDate?: Date): Extrac
  *  so "Free Testosterone (Bioavailable)7.4 pg/mL0.1 -" matches "Free Testosterone (Bioavailable)" */
 /** Canonical display names keyed by exact input string. */
 const LAB_CANONICAL: Record<string, string> = {
-  // ── Aminotransferases ──
+  // ── Aminotransferases / Liver ──
+  'ALT': 'Alanine Aminotransferase (ALT)',
   'ALT (Alanine Aminotransferase)': 'Alanine Aminotransferase (ALT)',
   'Alanine Aminotransferase': 'Alanine Aminotransferase (ALT)',
+  'SGPT': 'Alanine Aminotransferase (ALT)',
+  'AST': 'Aspartate Aminotransferase (AST)',
   'AST (Aspartate Aminotransferase)': 'Aspartate Aminotransferase (AST)',
   'Aspartate Aminotransferase': 'Aspartate Aminotransferase (AST)',
+  'SGOT': 'Aspartate Aminotransferase (AST)',
+  'Alkaline Phosphatase': 'Alkaline Phosphatase (ALP)',
+  'ALP': 'Alkaline Phosphatase (ALP)',
+  'Alk Phos': 'Alkaline Phosphatase (ALP)',
+  'Alk. Phos.': 'Alkaline Phosphatase (ALP)',
+  'GGT': 'Gamma-Glutamyl Transferase (GGT)',
+  'Gamma-Glutamyl Transferase': 'Gamma-Glutamyl Transferase (GGT)',
+  'Gamma-Glutamyltransferase': 'Gamma-Glutamyl Transferase (GGT)',
+  'Gamma-Glutamyltransferase (GGT)': 'Gamma-Glutamyl Transferase (GGT)',
+  'Gamma Glutamyl Transferase': 'Gamma-Glutamyl Transferase (GGT)',
+  'LDH': 'Lactate Dehydrogenase (LDH)',
+  'Lactate Dehydrogenase': 'Lactate Dehydrogenase (LDH)',
+  'LD': 'Lactate Dehydrogenase (LDH)',
+  // ── Bilirubin ──
+  'Bilirubin': 'Bilirubin, Total',
+  'Total Bilirubin': 'Bilirubin, Total',
+  'Direct Bilirubin': 'Bilirubin, Direct',
+  'Bilirubin, Direct (DBIL)': 'Bilirubin, Direct',
+  'Indirect Bilirubin': 'Bilirubin, Indirect',
+  'Bilirubin, Indirect (IBIL)': 'Bilirubin, Indirect',
+  // ── Basic metabolic panel electrolytes ──
+  'Sodium, Serum': 'Sodium',
+  'Serum Sodium': 'Sodium',
+  'Na': 'Sodium',
+  'Potassium, Serum': 'Potassium',
+  'Serum Potassium': 'Potassium',
+  'K': 'Potassium',
+  'Chloride, Serum': 'Chloride',
+  'Serum Chloride': 'Chloride',
+  'Cl': 'Chloride',
+  'Calcium, Serum': 'Calcium, Total',
+  'Calcium': 'Calcium, Total',
+  'Serum Calcium': 'Calcium, Total',
+  'Carbon Dioxide, Serum': 'Carbon Dioxide, Total',
+  'Glucose, Serum': 'Glucose',
+  'Serum Glucose': 'Glucose',
+  'Blood Glucose': 'Glucose',
+  'Creatinine, Serum': 'Creatinine',
+  'Serum Creatinine': 'Creatinine',
+  'Phosphorus': 'Phosphorus',
+  'Phosphorus, Serum': 'Phosphorus',
+  'Phosphate': 'Phosphorus',
+  'Serum Phosphorus': 'Phosphorus',
+  'Magnesium, Serum': 'Magnesium',
+  'Serum Magnesium': 'Magnesium',
+  'Mg': 'Magnesium',
+  'Uric Acid, Serum': 'Uric Acid',
+  'Serum Uric Acid': 'Uric Acid',
+  // ── Lipids ──
+  'Cholesterol': 'Total Cholesterol',
+  'Cholesterol, Total': 'Total Cholesterol',
+  'Cholesterol, Total, Serum': 'Total Cholesterol',
+  'LDL Cholesterol': 'LDL Cholesterol',
+  'LDL-Cholesterol': 'LDL Cholesterol',
+  'LDL-C': 'LDL Cholesterol',
+  'LDL Cholesterol, Calc': 'LDL Cholesterol',
+  'LDL Cholesterol (Calc)': 'LDL Cholesterol',
+  'Low-Density Lipoprotein Cholesterol': 'LDL Cholesterol',
+  'Low Density Lipoprotein': 'LDL Cholesterol',
+  'HDL Cholesterol': 'HDL Cholesterol',
+  'HDL-Cholesterol': 'HDL Cholesterol',
+  'HDL-C': 'HDL Cholesterol',
+  'High-Density Lipoprotein Cholesterol': 'HDL Cholesterol',
+  'High Density Lipoprotein': 'HDL Cholesterol',
+  'Triglycerides, Serum': 'Triglycerides',
+  'Serum Triglycerides': 'Triglycerides',
+  // ── Inflammation ──
+  'CRP': 'C-Reactive Protein',
+  'C-Reactive Protein (CRP)': 'C-Reactive Protein',
+  'hsCRP': 'C-Reactive Protein, High Sensitivity',
+  'hs-CRP': 'C-Reactive Protein, High Sensitivity',
+  'C-Reactive Protein, High Sensitivity (hs-CRP)': 'C-Reactive Protein, High Sensitivity',
+  'C-Reactive Protein (High Sensitivity)': 'C-Reactive Protein, High Sensitivity',
+  'High Sensitivity C-Reactive Protein': 'C-Reactive Protein, High Sensitivity',
+  // ── Iron studies ──
+  'Iron, Serum': 'Iron, Total',
+  'Serum Iron': 'Iron, Total',
+  'Ferritin, Serum': 'Ferritin',
+  'Serum Ferritin': 'Ferritin',
+  // ── CBC / Hematology ──
+  'Hgb': 'Hemoglobin',
+  'Hct': 'Hematocrit',
+  'PLT': 'Platelet Count',
+  'Plt': 'Platelet Count',
+  'Leukocytes': 'White Blood Cell Count',
+  'WBC Count': 'White Blood Cell Count',
+  'Erythrocytes': 'Red Blood Cell Count',
+  // ── Other common tests ──
+  'PSA': 'Prostate-Specific Antigen (PSA)',
+  'Prostate Specific Antigen': 'Prostate-Specific Antigen (PSA)',
+  'Prostate-Specific Antigen': 'Prostate-Specific Antigen (PSA)',
+  'Homocysteine, Plasma': 'Homocysteine',
+  'Homocysteine, Serum': 'Homocysteine',
+  'Anti-TPO': 'Thyroid Peroxidase Antibody (TPO)',
+  'Thyroid Peroxidase Ab': 'Thyroid Peroxidase Antibody (TPO)',
+  'Thyroid Peroxidase Antibodies': 'Thyroid Peroxidase Antibody (TPO)',
+  'Thyroid-Stimulating Immunoglobulin': 'Thyroid Stimulating Immunoglobulin (TSI)',
+  'TSI': 'Thyroid Stimulating Immunoglobulin (TSI)',
+  'INR': 'International Normalized Ratio (INR)',
+  'International Normalized Ratio': 'International Normalized Ratio (INR)',
+  'PT (Prothrombin Time)': 'Prothrombin Time (PT)',
+  'Prothrombin Time': 'Prothrombin Time (PT)',
+  'aPTT': 'Activated Partial Thromboplastin Time (aPTT)',
+  'PTT': 'Activated Partial Thromboplastin Time (aPTT)',
+  'Cortisol, AM': 'Cortisol, Morning',
+  'Cortisol, PM': 'Cortisol, Afternoon',
+  'Insulin, Fasting': 'Fasting Insulin',
+  'Albumin, Serum': 'Albumin',
+  'Serum Albumin': 'Albumin',
   // ── CBC differentials — "Absolute X" → "X, Absolute" ──
   'Absolute Basophils': 'Basophils, Absolute',
   'Absolute Eosinophils': 'Eosinophils, Absolute',
@@ -243,7 +355,11 @@ function applyNamingConvention(name: string): string {
 /** Return the canonical display name for a lab test, or the original if not in the lookup. */
 export function canonicalizeLabTestName(name: string): string {
   const trimmed = name.trim();
-  return LAB_CANONICAL[trimmed] ?? applyNamingConvention(trimmed);
+  if (LAB_CANONICAL[trimmed]) return LAB_CANONICAL[trimmed];
+  // Strip common sample-type qualifiers and retry (e.g. "Ferritin, Serum" → "Ferritin")
+  const stripped = trimmed.replace(/,\s*(Serum|Plasma|Blood|Urine|Whole Blood|Capillary)$/i, '').trim();
+  if (stripped !== trimmed && LAB_CANONICAL[stripped]) return LAB_CANONICAL[stripped];
+  return applyNamingConvention(trimmed);
 }
 
 /** Normalize for deduplication comparisons (case-insensitive key after canonicalization). */
