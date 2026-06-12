@@ -310,6 +310,8 @@ router.post(
               ...(aiResult?.provider?.specialty && !existingProvider.specialty && { specialty: aiResult.provider.specialty }),
             },
           });
+          // Use the existing canonical provider name on the record, not the raw extracted abbreviation
+          resolvedProvider = existingProvider.name;
         }
       }
 
@@ -542,6 +544,20 @@ router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   if (providerName !== undefined) {
     const recordId = req.params.id;
     const userId = req.userId!;
+
+    // Cascade the new name to labs and imaging extracted from this record
+    if (existing.providerName !== (providerName ?? null)) {
+      await Promise.all([
+        prisma.labResult.updateMany({
+          where: { sourceRecordId: recordId, providerName: existing.providerName },
+          data: { providerName: providerName ?? null },
+        }),
+        prisma.imagingStudy.updateMany({
+          where: { sourceRecordId: recordId, providerName: existing.providerName },
+          data: { providerName: providerName ?? null },
+        }),
+      ]);
+    }
 
     const allProviders = await prisma.provider.findMany({ where: { userId } });
 
