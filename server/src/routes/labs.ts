@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { VitalType, ImagingStudyType } from '@prisma/client';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../utils/prisma.js';
+import { canonicalizeLabTestName } from '../services/recordExtractor.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -45,7 +46,7 @@ router.get('/results', async (req: AuthRequest, res: Response): Promise<void> =>
     where: { userId: req.userId! },
     orderBy: { recordedAt: 'desc' },
   });
-  res.json({ results });
+  res.json({ results: results.map(r => ({ ...r, testName: canonicalizeLabTestName(r.testName) })) });
 });
 
 router.post('/results', async (req: AuthRequest, res: Response): Promise<void> => {

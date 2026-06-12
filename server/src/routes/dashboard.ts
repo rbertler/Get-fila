@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../utils/prisma.js';
+import { canonicalizeLabTestName } from '../services/recordExtractor.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -119,7 +120,7 @@ router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
     medications,
     conditions,
     upcomingAppointments,
-    recentLabResults: sortedLabResults,
+    recentLabResults: sortedLabResults.map(r => ({ ...r, testName: canonicalizeLabTestName(r.testName) })),
     recentRecords: sortedRecentRecords,
     providersMissingContact,
     medicationsMissingDetails,
