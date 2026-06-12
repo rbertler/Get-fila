@@ -237,6 +237,7 @@ router.post(
     // ── AI extraction (skipped for AI_SUMMARY records) ────────────────────────
     if (extractedText && recordType !== 'AI_SUMMARY') {
       const userId = req.userId!;
+      try {
 
       // Try AI first; fall back to regex if AI unavailable/fails
       const aiResult = await extractWithAI(extractedText, recordType);
@@ -315,14 +316,13 @@ router.post(
 
       if (aiResult) {
         // ── Labs ──────────────────────────────────────────────────────────────
-        const existingLabNames = new Set(
-          (await prisma.labResult.findMany({ where: { userId }, select: { testName: true } }))
-            .map(l => normalizeLabTestName(l.testName))
-        );
+        // Dedup only within this record — different records on different dates
+        // should each contribute their own lab values (trends over time matter).
+        const seenLabKeys = new Set<string>();
         for (const lab of aiResult.labs) {
           const canonicalName = canonicalizeLabTestName(lab.testName);
           const key = normalizeLabTestName(canonicalName);
-          if (existingLabNames.has(key)) continue;
+          if (seenLabKeys.has(key)) continue;
           // Use per-lab date when AI provides one; fall back to record-level effectiveDate
           const labDate = lab.recordedAt ? new Date(lab.recordedAt) : effectiveDate;
           await prisma.labResult.create({
@@ -339,7 +339,7 @@ router.post(
               providerName: labImagingProvider,
             },
           });
-          existingLabNames.add(key);
+          seenLabKeys.add(key);
           labsAdded++;
         }
 
@@ -426,7 +426,7 @@ router.post(
         if (aiResult.imaging) {
           const img = aiResult.imaging;
           const alreadyExists = await prisma.imagingStudy.findFirst({
-            where: { userId, studyType: img.studyType, bodyPart: { equals: img.bodyPart, mode: 'insensitive' } },
+            where: { userId, studyType: img.studyType, bodyPart: { equals: img.bodyPart, mode: 'insensitive' }, sourceRecordId: record.id },
           });
           if (!alreadyExists) {
             const studyDate = img.studyDate ? new Date(img.studyDate) : (record.recordDate ?? record.createdAt);
@@ -490,6 +490,13 @@ router.post(
 
       res.status(201).json({ record, extracted: { labs: labsAdded, medications: medicationsAdded, conditions: conditionsAdded, imaging: imagingAdded, vitals: vitalsAdded, providers: providersAdded } });
       return;
+      } catch (extractErr) {
+        console.error('[records] extraction failed for record', record.id, extractErr);
+        // Record and file are already saved — return 201 with zero counts so the
+        // client still sees the upload succeed, but log the extraction failure.
+        res.status(201).json({ record, extracted: { labs: 0, medications: 0, conditions: 0, imaging: 0, vitals: 0, providers: 0 } });
+        return;
+      }
     }
 
     res.status(201).json({ record, extracted: { labs: 0, medications: 0, conditions: 0, imaging: 0, vitals: 0, providers: 0 } });
