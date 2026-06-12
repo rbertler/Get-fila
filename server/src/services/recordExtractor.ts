@@ -558,3 +558,15 @@ export function parseProviderFromFileName(fileName: string): string | null {
 
   return null;
 }
+
+export function parseDateFromFileName(fileName: string): string | null {
+  // YYYY-MM-DD anywhere in the filename (e.g. "2026-06-10_Lab Report.pdf")
+  const m = fileName.match(/(\d{4}-\d{2}-\d{2})/);
+  if (m) return m[1];
+
+  // MM-DD-YYYY or MM_DD_YYYY
+  const m2 = fileName.match(/(\d{2})[-_](\d{2})[-_](\d{4})/);
+  if (m2) return `${m2[3]}-${m2[1]}-${m2[2]}`;
+
+  return null;
+}

@@ -6,7 +6,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../utils/prisma.js';
 import { saveFile, deleteFile, readFile } from '../services/storage.js';
 import { extractTextFromPdf } from '../services/pdfParser.js';
-import { parseLabResultsFromText, parseConditionsFromText, parseImagingFromText, parseProviderFromText, parseOrderingProviderFromText, parseProviderFromFileName, normalizeLabTestName, canonicalizeLabTestName, isOrganizationProviderName } from '../services/recordExtractor.js';
+import { parseLabResultsFromText, parseConditionsFromText, parseImagingFromText, parseProviderFromText, parseOrderingProviderFromText, parseProviderFromFileName, parseDateFromFileName, normalizeLabTestName, canonicalizeLabTestName, isOrganizationProviderName } from '../services/recordExtractor.js';
 import { extractWithAI } from '../services/aiExtractor.js';
 import { normalizeProviderKey } from './providers.js';
 
@@ -260,24 +260,27 @@ router.post(
       // Back-fill record's providerName and/or recordDate if resolved via AI/regex
       const backfill: Record<string, unknown> = {};
       if (!providerName && resolvedProvider) backfill.providerName = resolvedProvider;
+      const fileNameDate = parseDateFromFileName(record.fileName);
       if (!req.body.recordDate && aiResult?.recordDate) backfill.recordDate = new Date(aiResult.recordDate);
+      else if (!req.body.recordDate && !aiResult?.recordDate && fileNameDate) backfill.recordDate = new Date(fileNameDate);
       if (Object.keys(backfill).length > 0) {
         await prisma.medicalRecord.update({ where: { id: record.id }, data: backfill });
       }
 
-      // Effective date for child records: user-supplied > AI-extracted > createdAt
+      // Effective date for child records: user-supplied > AI-extracted > filename > createdAt
       const effectiveDate: Date =
         req.body.recordDate ? new Date(req.body.recordDate)
         : aiResult?.recordDate ? new Date(aiResult.recordDate)
+        : fileNameDate ? new Date(fileNameDate)
         : record.createdAt;
 
       // Upsert provider directory
       if (resolvedProvider) {
         const normKey = normalizeProviderKey(resolvedProvider);
         const isOrg = isOrganizationProviderName(resolvedProvider);
-        const existingProvider = await prisma.provider.findFirst({
-          where: { userId, name: { equals: resolvedProvider, mode: 'insensitive' } },
-        });
+        // Match by normalized key so "Smith, J, MD" and "Smith, J" don't create duplicates
+        const allProviders = await prisma.provider.findMany({ where: { userId }, select: { id: true, name: true, affiliation: true, providerType: true, specialty: true, sourceRecordIds: true } });
+        const existingProvider = allProviders.find(p => normalizeProviderKey(p.name) === normKey) ?? null;
         if (!existingProvider) {
           await prisma.provider.create({
             data: {
@@ -378,6 +381,10 @@ router.post(
           const key = combinedName.toLowerCase();
           const normalizedKey = normalizeDrugName(combinedName);
           if (existingMedNames.has(key) || existingMedNormalized.has(normalizedKey)) continue;
+          // Reject entries that look like document field names, date fragments, or bare dosage words
+          if (/^(status|repeat|number|dispense|quantity|last\s*modified|organization|details|time|date|notes?|comments?|indication|directions?|instructions?|sig|refills?|ndc|fill|filled|prescribed|prescriber|pharmacy|days?\s*supply|route|form|strength|unit|units)$/i.test(med.name.trim())) continue;
+          if (/^[\d\/\-]+$/.test(med.name.trim()) || /^(tablet|capsule|cap|tab|patch|spray|drop|puff|solution|suspension|injection)s?$/i.test(med.name.trim())) continue;
+          if (/^[A-Z][a-z]+(?:[A-Z][a-z]+){2,}$/.test(med.name.trim())) continue;
           // Use per-medication date when AI provides one; fall back to the record's effective date
           const medDate = med.startDate ? new Date(med.startDate) : null;
           await prisma.medicalHistoryEntry.create({
@@ -670,6 +677,12 @@ function parseMedicationsFromText(text: string): { name: string; details: string
     if (/\b(pharmacotherapy|psychostimulant|stimulant|non-stimulant|therapy|treatment\s+plan|regimen|protocol|clinical\s+trial|initiat|category|class|approach|strategy|management|intervention)\b/i.test(name)) continue;
     // Drug names shouldn't be more than 4 words (e.g. "Ferrous Sulfate 325mg daily" is borderline ok, "Psychostimulant Pharmacotherapy" is not a drug)
     if (name.split(/\s+/).length > 5 && !hasDosage) continue;
+    // Skip database/document field names that appear in pharmacy export formats
+    if (/^(status|repeat|number|dispense|quantity|last\s*modified|organization|details|time|date|notes?|comments?|description|indication|directions?|instructions?|sig|refills?|daw|ndc|fill|filled|prescribed|prescriber|pharmacy|days?\s*supply|route|form|strength|unit|units)$/i.test(name)) continue;
+    // Skip entries that look like date fragments or bare dosage words
+    if (/^[\d\/\-]+$/.test(name) || /^(tablet|capsule|cap|tab|patch|spray|drop|puff|solution|suspension|injection)s?$/i.test(name)) continue;
+    // Skip CamelCase compound words that are clearly database field names (e.g. "StatusNoteIndicationFill")
+    if (/^[A-Z][a-z]+(?:[A-Z][a-z]+){2,}$/.test(name)) continue;
 
     if (name.length >= 3) results.push({ name, details });
   }
