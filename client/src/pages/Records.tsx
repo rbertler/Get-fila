@@ -950,6 +950,9 @@ export function Records() {
               {previewRecord?.providerName && <span className="text-xs text-gray-500">{previewRecord.providerName}</span>}
               {previewRecord?.recordDate && <span className="text-xs text-gray-400">{format(parseDate(previewRecord.recordDate), 'MMM d, yyyy')}</span>}
             </div>
+            {previewRecord?.aiSummary && (
+              <p className="text-xs text-gray-600 leading-relaxed pt-1 border-t border-gray-100 mt-2">{previewRecord.aiSummary}</p>
+            )}
           </DialogHeader>
 
           <div ref={pdfContainerRef} className="flex-1 overflow-auto bg-gray-100 flex justify-center min-h-0">
