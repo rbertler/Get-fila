@@ -262,6 +262,7 @@ const LAB_CANONICAL: Record<string, string> = {
   'Globulin': 'Globulin, Total',
   'Iron': 'Iron, Total',
   'Iron Saturation Percentage': 'Iron Saturation',
+  'Iron Saturation Percent': 'Iron Saturation',
   'Magnesium, Red Blood Cell': 'Magnesium, RBC',
   'Magnesium RBC': 'Magnesium, RBC',
   'Iron Binding Capacity (TIBC)': 'Iron Binding Capacity, Total (TIBC)',
@@ -273,6 +274,7 @@ const LAB_CANONICAL: Record<string, string> = {
   'MCV (Mean Corpuscular Volume)': 'Mean Corpuscular Volume (MCV)',
   'Mean Corpuscular Volume': 'Mean Corpuscular Volume (MCV)',
   'MPV (Mean Platelet Volume)': 'Mean Platelet Volume (MPV)',
+  'Mean Platelet Volume': 'Mean Platelet Volume (MPV)',
   'Platelets': 'Platelet Count',
   'Protein, Total': 'Protein, Total',
   'Total Protein': 'Protein, Total',
@@ -359,6 +361,13 @@ export function canonicalizeLabTestName(name: string): string {
   // Strip common sample-type qualifiers and retry (e.g. "Ferritin, Serum" → "Ferritin")
   const stripped = trimmed.replace(/,\s*(Serum|Plasma|Blood|Urine|Whole Blood|Capillary)$/i, '').trim();
   if (stripped !== trimmed && LAB_CANONICAL[stripped]) return LAB_CANONICAL[stripped];
+  // Strip "Percent" / "Relative" suffix — CBC differentials use these interchangeably
+  // e.g. "Eosinophils Percent" and "Eosinophils Relative" both → "Eosinophils"
+  const withoutPctRel = trimmed.replace(/\s+(Percent|Relative|%)$/i, '').trim();
+  if (withoutPctRel !== trimmed) {
+    if (LAB_CANONICAL[withoutPctRel]) return LAB_CANONICAL[withoutPctRel];
+    return applyNamingConvention(withoutPctRel);
+  }
   return applyNamingConvention(trimmed);
 }
 
