@@ -251,7 +251,32 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
     }
   }
 
-  res.json({ message: `Sync complete: ${created} added, ${updated} updated`, created, updated });
+  // ── Back-fill canonical provider names on labs, imaging, and records ─────────
+  // Any row whose providerName normalises to a known directory entry gets updated
+  // to the canonical name so abbreviated extractions (e.g. "Austin, C") are
+  // replaced with the full directory name ("Austin, Colby, MD").
+  let normalised = 0;
+
+  const [allLabs, allImaging, allRecords] = await Promise.all([
+    prisma.labResult.findMany({ where: { userId, providerName: { not: null } }, select: { id: true, providerName: true } }),
+    prisma.imagingStudy.findMany({ where: { userId, providerName: { not: null } }, select: { id: true, providerName: true } }),
+    prisma.medicalRecord.findMany({ where: { userId, providerName: { not: null } }, select: { id: true, providerName: true } }),
+  ]);
+
+  for (const row of [...allLabs, ...allImaging, ...allRecords]) {
+    if (!row.providerName) continue;
+    const key = normalizeProviderKey(row.providerName);
+    const canonical = existingByKey.get(key);
+    if (canonical && canonical.name !== row.providerName) {
+      const table = allLabs.some(r => r.id === row.id) ? prisma.labResult
+        : allImaging.some(r => r.id === row.id) ? prisma.imagingStudy
+        : prisma.medicalRecord;
+      await (table as any).update({ where: { id: row.id }, data: { providerName: canonical.name } });
+      normalised++;
+    }
+  }
+
+  res.json({ message: `Sync complete: ${created} added, ${updated} updated, ${normalised} names normalised`, created, updated, normalised });
 });
 
 export default router;
