@@ -1146,6 +1146,28 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
     }
   }
 
+  // Back-fill canonical provider names on all labs, imaging, and records
+  // whose providerName is an abbreviated variant of a known directory entry.
+  const allProvidersForNorm = await prisma.provider.findMany({ where: { userId } });
+  const providersByKey = new Map(allProvidersForNorm.map(p => [normalizeProviderKey(p.name), p]));
+
+  const [allLabs, allImaging, allMedRecs] = await Promise.all([
+    prisma.labResult.findMany({ where: { userId, providerName: { not: null } }, select: { id: true, providerName: true } }),
+    prisma.imagingStudy.findMany({ where: { userId, providerName: { not: null } }, select: { id: true, providerName: true } }),
+    prisma.medicalRecord.findMany({ where: { userId, providerName: { not: null } }, select: { id: true, providerName: true } }),
+  ]);
+
+  for (const row of [...allLabs, ...allImaging, ...allMedRecs]) {
+    if (!row.providerName) continue;
+    const canonical = providersByKey.get(normalizeProviderKey(row.providerName));
+    if (canonical && canonical.name !== row.providerName) {
+      const table = allLabs.some(r => r.id === row.id) ? prisma.labResult
+        : allImaging.some(r => r.id === row.id) ? prisma.imagingStudy
+        : prisma.medicalRecord;
+      await (table as any).update({ where: { id: row.id }, data: { providerName: canonical.name } });
+    }
+  }
+
   const total = labsAdded + conditionsAdded + medicationsAdded + imagingAdded + vitalsAdded + providersAdded;
   res.json({
     message: total > 0
