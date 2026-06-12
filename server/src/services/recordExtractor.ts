@@ -107,10 +107,12 @@ const LAB_CANONICAL: Record<string, string> = {
   // ── Aminotransferases / Liver ──
   'ALT': 'Alanine Aminotransferase (ALT)',
   'ALT (Alanine Aminotransferase)': 'Alanine Aminotransferase (ALT)',
+  'ALT (SGPT)': 'Alanine Aminotransferase (ALT)',
   'Alanine Aminotransferase': 'Alanine Aminotransferase (ALT)',
   'SGPT': 'Alanine Aminotransferase (ALT)',
   'AST': 'Aspartate Aminotransferase (AST)',
   'AST (Aspartate Aminotransferase)': 'Aspartate Aminotransferase (AST)',
+  'AST (SGOT)': 'Aspartate Aminotransferase (AST)',
   'Aspartate Aminotransferase': 'Aspartate Aminotransferase (AST)',
   'SGOT': 'Aspartate Aminotransferase (AST)',
   'Alkaline Phosphatase': 'Alkaline Phosphatase (ALP)',
@@ -185,6 +187,7 @@ const LAB_CANONICAL: Record<string, string> = {
   'hs-CRP': 'C-Reactive Protein, High Sensitivity',
   'C-Reactive Protein, High Sensitivity (hs-CRP)': 'C-Reactive Protein, High Sensitivity',
   'C-Reactive Protein (High Sensitivity)': 'C-Reactive Protein, High Sensitivity',
+  'C-Reactive Protein, Cardiac': 'C-Reactive Protein, High Sensitivity',
   'High Sensitivity C-Reactive Protein': 'C-Reactive Protein, High Sensitivity',
   // ── Iron studies ──
   'Iron, Serum': 'Iron, Total',
