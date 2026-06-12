@@ -181,6 +181,7 @@ router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
       recordDate: true,
       providerName: true,
       notes: true,
+      aiSummary: true,
       createdAt: true,
     },
   });
@@ -1157,6 +1158,30 @@ router.post('/sync', async (req: AuthRequest, res: Response): Promise<void> => {
     vitalsAdded,
     providersAdded,
   });
+});
+
+// ── Back-fill AI summaries for records that don't have one yet ────────────────
+router.post('/generate-summaries', async (req: AuthRequest, res: Response): Promise<void> => {
+  const userId = req.userId!;
+  const missing = await prisma.medicalRecord.findMany({
+    where: { userId, aiSummary: null, extractedText: { not: null }, recordType: { not: 'AI_SUMMARY' } },
+    select: { id: true, extractedText: true, recordType: true },
+  });
+
+  let generated = 0;
+  for (const record of missing) {
+    try {
+      const summary = await generateRecordSummary(record.extractedText!, record.recordType);
+      if (summary) {
+        await prisma.medicalRecord.update({ where: { id: record.id }, data: { aiSummary: summary } });
+        generated++;
+      }
+    } catch (err) {
+      console.error('[records] batch aiSummary failed for', record.id, err);
+    }
+  }
+
+  res.json({ generated, total: missing.length });
 });
 
 export default router;
