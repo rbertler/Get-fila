@@ -341,7 +341,7 @@ export function Dashboard() {
         <div className="flex items-start justify-between gap-3 mb-0.5">
           <h1 className="text-xl md:text-3xl font-bold text-gray-900">
             Good {getTimeOfDay()},{' '}
-            <span style={{ background: 'linear-gradient(135deg, #2b4257 0%, #6da7cc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            <span style={{ background: 'linear-gradient(135deg, #91c5bf 0%, #6da7cc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
               {userName.split(' ')[0]}
             </span>!
           </h1>

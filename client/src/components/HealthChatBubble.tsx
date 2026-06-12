@@ -57,7 +57,7 @@ export function HealthChatBubble() {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full px-4 py-3 shadow-lg text-white text-sm font-semibold transition-transform hover:scale-105 active:scale-95"
-          style={{ background: 'linear-gradient(135deg, #2b4257 0%, #6da7cc 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #91c5bf 0%, #6da7cc 100%)' }}
           aria-label="Ask about your health"
         >
           <Brain className="h-4 w-4" />
@@ -74,7 +74,7 @@ export function HealthChatBubble() {
           {/* Header */}
           <div
             className="flex items-center justify-between px-4 py-3 shrink-0"
-            style={{ background: 'linear-gradient(135deg, #2b4257 0%, #6da7cc 100%)' }}
+            style={{ background: 'linear-gradient(135deg, #91c5bf 0%, #6da7cc 100%)' }}
           >
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-white" />
