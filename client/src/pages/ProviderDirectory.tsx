@@ -759,7 +759,8 @@ export function ProviderDirectory() {
                         <button
                           key={r.id}
                           onClick={() => switchRecord(i)}
-                          className={`text-xs px-2.5 py-1 rounded-md transition-colors ${
+                          title={r.fileName}
+                          className={`text-xs px-2.5 py-1 rounded-md transition-colors max-w-[120px] truncate shrink-0 ${
                             i === activeRecordIdx ? 'bg-primary/10 text-primary font-medium' : 'text-gray-500 hover:bg-gray-100'
                           }`}
                         >
