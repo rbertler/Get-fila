@@ -11,11 +11,18 @@ const router = Router();
  * so "Dr. Amanda Vance, MD" and "Amanda Vance, MD" resolve to "amanda vance".
  */
 export function normalizeProviderKey(name: string): string {
-  return name
+  const stripped = name
     .replace(/^Dr\.?\s+/i, '')
     .replace(/\s*,?\s*(?:MD|DO|NP|PA|RN|PhD|FACOG|FACP|FACS|FAAFP|MPH|MBA|MS|BS)\.?(\s*,\s*(?:MD|DO|NP|PA|RN|PhD|FACOG|FACP|FACS|FAAFP|MPH|MBA|MS|BS)\.?)*$/gi, '')
     .toLowerCase()
     .trim();
+
+  // For "Last, Firstname [Middle]" format, reduce to "Last, F" so "Austin, C"
+  // and "Austin, Colby" resolve to the same key.
+  const commaMatch = stripped.match(/^([^,]+),\s*([a-z])/);
+  if (commaMatch) return `${commaMatch[1].trim()}, ${commaMatch[2]}`;
+
+  return stripped;
 }
 router.use(requireAuth);
 
