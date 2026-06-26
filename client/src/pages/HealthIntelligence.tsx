@@ -12,10 +12,10 @@ import { EmptyState } from '@/components/EmptyState';
 import { toast } from '@/hooks/useToast';
 import { format } from 'date-fns';
 
-const CONFIDENCE_STYLES: Record<InsightItem['confidence'], { background: string; color: string }> = {
-  high:     { background: '#102a45', color: '#ffffff' },
-  moderate: { background: '#244a73', color: '#ffffff' },
-  low:      { background: '#d6e6f5', color: '#102a45' },
+const CONFIDENCE_VARIANTS: Record<InsightItem['confidence'], 'strongPattern' | 'possiblePattern' | 'weakPattern'> = {
+  high:     'strongPattern',
+  moderate: 'possiblePattern',
+  low:      'weakPattern',
 };
 
 const CONFIDENCE_LABELS: Record<InsightItem['confidence'], string> = {
@@ -57,7 +57,7 @@ function ReportCard({ report }: { report: HealthInsightReport }) {
                   <div>
                     <p className="text-sm font-semibold text-gray-900 leading-snug">{insight.title}</p>
                     <div className="mt-1">
-                      <Badge variant="outline" style={{ ...CONFIDENCE_STYLES[insight.confidence], border: 'none' }}>
+                      <Badge variant={CONFIDENCE_VARIANTS[insight.confidence]}>
                         {CONFIDENCE_LABELS[insight.confidence]}
                       </Badge>
                     </div>
@@ -639,13 +639,8 @@ export function HealthIntelligence() {
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-gray-500">{(r.insights as InsightItem[]).length} insights</p>
                     <Badge
-                      variant="outline"
+                      variant={r.reportType === 'general' ? 'strongPattern' : 'weakPattern'}
                       className="text-xs shrink-0"
-                      style={r.reportType === 'focused'
-                        ? { background: '#d6e6f5', color: '#102a45', border: 'none' }
-                        : r.reportType === 'thematic'
-                        ? { background: '#d6e6f5', color: '#102a45', border: 'none' }
-                        : { background: '#102a45', color: '#fff', border: 'none' }}
                     >
                       {r.reportType === 'focused' ? 'Focused' : r.reportType === 'thematic' ? 'Themed' : 'Full'}
                     </Badge>

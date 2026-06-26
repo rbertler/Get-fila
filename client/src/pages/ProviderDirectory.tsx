@@ -34,13 +34,13 @@ const RECORD_TYPE_LABELS: Record<RecordType, string> = {
   OTHER: 'Other',
 };
 
-const RECORD_TYPE_VARIANTS: Record<RecordType, 'labReport' | 'success' | 'imaging' | 'prescription' | 'referral' | 'surgery' | 'neutral' | 'aiSummary'> = {
+const RECORD_TYPE_VARIANTS: Record<RecordType, 'labReport' | 'visitSummary' | 'imaging' | 'prescription' | 'referral' | 'operativeReport' | 'neutral' | 'aiSummary'> = {
   LAB_REPORT: 'labReport',
-  VISIT_SUMMARY: 'success',
+  VISIT_SUMMARY: 'visitSummary',
   IMAGING: 'imaging',
   PRESCRIPTION: 'prescription',
   REFERRAL: 'referral',
-  OPERATIVE_REPORT: 'surgery',
+  OPERATIVE_REPORT: 'operativeReport',
   AI_SUMMARY: 'aiSummary',
   OTHER: 'neutral',
 };
@@ -629,7 +629,7 @@ export function ProviderDirectory() {
                   <Button
                     variant="outline" size="sm"
                     onClick={() => handleArchive(selected)}
-                    className={`gap-1.5 ${selected.isArchived ? 'text-[#276749] border-[#276749]/30 hover:bg-[#276749] hover:text-white' : 'text-[#4a4e5a] border-[#4a4e5a] hover:bg-[#4a4e5a] hover:text-white'}`}
+                    className={`gap-1.5 ${selected.isArchived ? 'text-[#276749] border-[#276749]/30 hover:bg-[#276749] hover:text-white' : 'text-[#244a73] border-[#244a73] hover:bg-[#244a73] hover:text-white'}`}
                   >
                     {selected.isArchived
                       ? <><ArchiveRestore className="h-3.5 w-3.5" /> Reactivate</>

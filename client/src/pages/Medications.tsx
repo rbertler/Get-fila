@@ -431,10 +431,10 @@ function MedCard({
             </span>
           )}
           {entry.category === 'MEDICATION' && (
-            <Badge variant="outline" className="text-xs" style={{ background: '#102a45', color: '#adcce6', border: 'none' }}>Medication</Badge>
+            <Badge variant="medication" className="text-xs">Medication</Badge>
           )}
           {entry.category === 'SUPPLEMENT' && (
-            <Badge variant="outline" className="text-xs" style={{ background: '#adcce6', color: '#102a45', border: 'none' }}>Supplement</Badge>
+            <Badge variant="supplement" className="text-xs">Supplement</Badge>
           )}
           {entry.isManual ? (
             <Badge variant="manual" className="text-xs">Manual</Badge>

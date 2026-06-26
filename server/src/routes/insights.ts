@@ -161,7 +161,7 @@ router.post('/:id/save-to-records', async (req: AuthRequest, res: Response): Pro
   try {
     const pdfBuffer = await generateInsightPdf(report.id);
     const dateStr = format(new Date(report.generatedAt), 'yyyy-MM-dd');
-    const fileName = `Health Intelligence - ${format(new Date(report.generatedAt), 'MMMM d, yyyy')}.pdf`;
+    const fileName = `${format(new Date(report.generatedAt), 'MMMM yyyy')} Health Intelligence Report.pdf`;
     const stored = await saveFile(pdfBuffer, fileName, 'application/pdf');
 
     const record = await prisma.medicalRecord.create({

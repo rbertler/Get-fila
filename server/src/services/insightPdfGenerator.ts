@@ -10,12 +10,12 @@ import { prisma } from '../utils/prisma.js';
 import type { InsightItem } from './insightGenerator.js';
 
 // ── Colors ────────────────────────────────────────────────────────────────────
-const NAVY     = '#2b4257';
+const NAVY     = '#102a45';
 const BODY     = '#1f2937';
 const MID_GRAY = '#6b7280';
 const CITE     = '#9ca3af';
 const AMBER    = '#b45309';
-const CONF     = '#6da7cc';
+const CONF     = '#244a73';
 const DIVIDER  = '#e5e7eb';
 const HDR_FOOT = '#9ca3af';
 
@@ -133,8 +133,9 @@ export async function generateInsightPdf(reportId: string): Promise<Buffer> {
 
     // Title — snug below logo (logo bottom ≈ 75)
     bold(doc);
+    const titleMonth = new Date(report.generatedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     doc.fontSize(22).fillColor(NAVY)
-      .text('Health Intelligence Report', MARGIN, 84, { width: CW, align: 'center' });
+      .text(`${titleMonth} Health Intelligence Report`, MARGIN, 84, { width: CW, align: 'center' });
 
     // Set cursor just below title
     doc.y = 118;

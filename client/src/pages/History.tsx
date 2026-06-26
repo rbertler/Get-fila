@@ -152,11 +152,11 @@ function imagingSubtitle(study: ImagingStudy): string | null {
 // #244a73 (top/newest) → #adcce6 (bottom/oldest)
 function gradientDotColor(index: number, total: number): string {
   const t = total <= 1 ? 0 : index / (total - 1);
-  // #244a73 = rgb(109, 167, 204)
-  // #adcce6 = rgb(145, 197, 191)
-  const r = Math.round(109 + (145 - 109) * t);
-  const g = Math.round(167 + (197 - 167) * t);
-  const b = Math.round(204 + (191 - 204) * t);
+  // #244a73 = rgb(36, 74, 115)
+  // #adcce6 = rgb(173, 204, 230)
+  const r = Math.round(36 + (173 - 36) * t);
+  const g = Math.round(74 + (204 - 74) * t);
+  const b = Math.round(115 + (230 - 115) * t);
   return `rgb(${r}, ${g}, ${b})`;
 }
 
@@ -826,7 +826,7 @@ function HealthTimeline({
                 if (item.kind === 'imaging') {
                   const study = item.data;
                   const imgStatus = getImagingStatus(study);
-                  const imgStyle = imgStatus ? STATUS_STYLE[imgStatus] : { cardBg: 'bg-[#d8dae8]', cardBorder: 'border-[#457aab]', dot: 'bg-[#457aab]', color: '#6b7280' };
+                  const imgStyle = imgStatus ? STATUS_STYLE[imgStatus] : { cardBg: 'bg-[#d6e6f5]', cardBorder: 'border-[#457aab]', dot: 'bg-[#457aab]', color: '#244a73' };
                   return (
                     <div key={`imaging-${study.id}`} className="relative flex items-start gap-4">
                       {/* Dot */}
