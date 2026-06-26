@@ -22,7 +22,7 @@ const navItems = [
   { to: '/providers', icon: Users, label: 'Provider Directory' },
 ];
 
-const BRAND_TEXT = '#2b4257';
+const BRAND_TEXT = '#102a45';
 
 export function Sidebar() {
   const { user, logout } = useAuth();
@@ -37,10 +37,10 @@ export function Sidebar() {
   return (
     <aside
       className="hidden md:flex h-screen w-64 flex-col"
-      style={{ background: 'linear-gradient(135deg, #6da7cc 0%, #91c5bf 100%)' }}
+      style={{ background: 'linear-gradient(180deg, #244a73 0%, #adcce6 100%)' }}
     >
       {/* Logo */}
-      <div className="flex items-center justify-center px-6 py-5 border-b border-[#e3ebf2]">
+      <div className="flex items-center justify-center px-6 py-5 border-b border-[#d6e6f5]">
         <FilaLogo size="sm" variant="light" />
       </div>
 
@@ -54,7 +54,7 @@ export function Sidebar() {
               cn(
                 'flex items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium transition-colors min-h-[44px]',
                 isActive
-                  ? 'bg-white/30 text-[#2b4257]'
+                  ? 'bg-white/30 text-[#102a45]'
                   : 'hover:bg-white/20'
               )
             }
@@ -71,7 +71,7 @@ export function Sidebar() {
       </nav>
 
       {/* User */}
-      <div className="border-t border-[#e3ebf2] px-3 py-4" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div className="border-t border-[#d6e6f5] px-3 py-4" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
         <div className="mb-2 px-3 py-1">
           <p className="text-base font-medium truncate" style={{ color: BRAND_TEXT }}>{user?.name}</p>
           <p className="text-sm truncate" style={{ color: BRAND_TEXT, opacity: 0.7 }}>{user?.email}</p>

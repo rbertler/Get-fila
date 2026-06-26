@@ -587,7 +587,7 @@ export function ProviderDirectory() {
         </div>
 
         {/* ── Right: detail ── */}
-        <div className={`${mobileShowDetail ? 'flex' : 'hidden'} md:flex flex-col flex-1 min-w-0 overflow-x-hidden overflow-y-auto bg-[#e3ebf2]`}>
+        <div className={`${mobileShowDetail ? 'flex' : 'hidden'} md:flex flex-col flex-1 min-w-0 overflow-x-hidden overflow-y-auto bg-[#d6e6f5]`}>
           {!selected ? (
             <EmptyState
               icon={Users}
@@ -601,7 +601,7 @@ export function ProviderDirectory() {
               <button
                 onClick={() => setMobileShowDetail(false)}
                 className="flex md:hidden items-center gap-1.5 text-sm font-medium mb-2"
-                style={{ color: '#2b4257' }}
+                style={{ color: '#102a45' }}
               >
                 <ChevronLeft className="h-4 w-4" /> All Providers
               </button>
@@ -715,8 +715,8 @@ export function ProviderDirectory() {
                       {linkedRecords.map((r, i) => (
                         <div key={r.id} className="rounded-lg border bg-white p-4 flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-9 w-9 rounded-md bg-[#e3ebf2] flex items-center justify-center shrink-0">
-                              <FileText className="h-4 w-4 text-[#2b4257]" />
+                            <div className="h-9 w-9 rounded-md bg-[#d6e6f5] flex items-center justify-center shrink-0">
+                              <FileText className="h-4 w-4 text-[#102a45]" />
                             </div>
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-gray-900 truncate">{r.fileName}</p>

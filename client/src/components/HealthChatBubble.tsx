@@ -57,7 +57,7 @@ export function HealthChatBubble() {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full px-4 py-3 shadow-lg text-white text-sm font-semibold transition-transform hover:scale-105 active:scale-95"
-          style={{ background: 'linear-gradient(135deg, #91c5bf 0%, #6da7cc 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #244a73 0%, #adcce6 100%)' }}
           aria-label="Ask about your health"
         >
           <Brain className="h-4 w-4" />
@@ -74,7 +74,7 @@ export function HealthChatBubble() {
           {/* Header */}
           <div
             className="flex items-center justify-between px-4 py-3 shrink-0"
-            style={{ background: 'linear-gradient(135deg, #91c5bf 0%, #6da7cc 100%)' }}
+            style={{ background: 'linear-gradient(135deg, #244a73 0%, #adcce6 100%)' }}
           >
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-white" />
@@ -93,7 +93,7 @@ export function HealthChatBubble() {
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-gray-50">
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center px-4 gap-3">
-                <Brain className="h-8 w-8" style={{ color: '#6da7cc' }} />
+                <Brain className="h-8 w-8" style={{ color: '#244a73' }} />
                 <p className="text-sm text-gray-700 font-medium">Ask anything about your health records</p>
                 <p className="text-xs text-gray-400">Questions about your labs, medications, conditions, or patterns in your data.</p>
                 <div className="flex flex-col gap-1.5 w-full mt-2">
@@ -105,7 +105,7 @@ export function HealthChatBubble() {
                     <button
                       key={q}
                       onClick={() => { setInput(q); inputRef.current?.focus(); }}
-                      className="text-left px-3 py-2 rounded-lg text-xs text-gray-600 bg-white border border-gray-200 hover:border-[#6da7cc] hover:text-[#2b4257] transition-colors"
+                      className="text-left px-3 py-2 rounded-lg text-xs text-gray-600 bg-white border border-gray-200 hover:border-[#244a73] hover:text-[#102a45] transition-colors"
                     >
                       {q}
                     </button>
@@ -119,7 +119,7 @@ export function HealthChatBubble() {
                 <div
                   className="max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed"
                   style={msg.role === 'user'
-                    ? { background: '#2b4257', color: '#fff', borderBottomRightRadius: 4 }
+                    ? { background: '#102a45', color: '#fff', borderBottomRightRadius: 4 }
                     : { background: '#fff', color: '#1f2937', border: '1px solid #e5e7eb', borderBottomLeftRadius: 4 }}
                 >
                   {msg.content}
@@ -147,7 +147,7 @@ export function HealthChatBubble() {
               onKeyDown={handleKeyDown}
               placeholder="Ask about your health…"
               rows={1}
-              className="flex-1 resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6da7cc]/40 leading-snug"
+              className="flex-1 resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#244a73]/40 leading-snug"
               style={{ maxHeight: 96, overflowY: 'auto' }}
               disabled={loading}
             />
@@ -155,7 +155,7 @@ export function HealthChatBubble() {
               onClick={handleSend}
               disabled={!input.trim() || loading}
               className="shrink-0 flex items-center justify-center h-9 w-9 rounded-xl text-white disabled:opacity-40 transition-opacity"
-              style={{ background: '#2b4257' }}
+              style={{ background: '#102a45' }}
               aria-label="Send"
             >
               <Send className="h-4 w-4" />

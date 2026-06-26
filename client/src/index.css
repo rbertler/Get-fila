@@ -5,39 +5,39 @@
 @layer base {
   :root {
     /* Fila Brand Colors
-       Primary   #2b4257 — headers, logos, key brand elements
-       Secondary #6da7cc — buttons, links, interactive elements
-       Background #e3ebf2 — page backgrounds and light sections
-       Accent    #5ba8a0 — highlights, icons, call-to-actions
-       Neutral   #b1b4cb — borders, dividers, subtle text
+       Primary   #102a45 — headers, logos, key brand elements
+       Secondary #244a73 — buttons, links, interactive elements
+       Background #d6e6f5 — page backgrounds and light sections
+       Accent    #457aab — highlights, icons, call-to-actions
+       Neutral   #80add1 — borders, dividers, subtle text
     */
-    --background: 208 37% 92%;          /* #e3ebf2 */
-    --foreground: 209 34% 12%;
+    --background: 211 62% 90%;          /* #d6e6f5 */
+    --foreground: 211 63% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 209 34% 12%;
+    --card-foreground: 211 63% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 209 34% 12%;
+    --popover-foreground: 211 63% 17%;
 
-    --primary: 209 34% 25%;             /* #2b4257 */
+    --primary: 211 63% 17%;             /* #102a45 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 208 30% 87%;
-    --secondary-foreground: 209 34% 25%;
+    --secondary: 211 52% 30%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 208 25% 87%;
-    --muted-foreground: 233 15% 48%;
+    --muted: 208 52% 85%;
+    --muted-foreground: 211 52% 30%;
 
-    --accent: 176 35% 49%;              /* #5ba8a0 */
+    --accent: 210 39% 47%;              /* #457aab */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 233 20% 82%;
-    --input: 233 20% 82%;
-    --ring: 203 48% 61%;                /* #6da7cc */
+    --border: 208 52% 82%;
+    --input: 208 52% 82%;
+    --ring: 211 52% 30%;                /* #244a73 */
 
     --radius: 0.5rem;
   }
@@ -61,14 +61,14 @@
   h1 {
     font-family: 'Montserrat', system-ui, sans-serif;
     font-weight: 700;
-    color: #2b4257;
+    color: #102a45;
   }
 
   /* h2–h6 — section/card headers: Montserrat Medium */
   h2, h3, h4, h5, h6 {
     font-family: 'Montserrat', system-ui, sans-serif;
     font-weight: 500;
-    color: #2b4257;
+    color: #102a45;
   }
 
   /* Body text: Inter Regular */

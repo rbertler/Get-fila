@@ -350,7 +350,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
       const el = document.getElementById(`lab-${slug}`);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.style.outline = '2px solid #6da7cc';
+        el.style.outline = '2px solid #244a73';
         el.style.outlineOffset = '3px';
         setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 2000);
       }
@@ -369,7 +369,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
       const el = document.getElementById(`imaging-${scrollToImagingId}`);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.style.outline = '2px solid #6da7cc';
+        el.style.outline = '2px solid #244a73';
         el.style.outlineOffset = '3px';
         setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 2000);
       }
@@ -586,7 +586,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
     <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-6 text-center">
       <p className="text-sm font-medium text-gray-600">No results match your filters</p>
       <p className="text-xs text-gray-400 mt-1">Try adjusting the result status or date range.</p>
-      <button type="button" onClick={clearFilters} className="mt-3 text-xs font-semibold text-[#5ba8a0] hover:text-[#2b4257] transition-colors">Clear filters</button>
+      <button type="button" onClick={clearFilters} className="mt-3 text-xs font-semibold text-[#457aab] hover:text-[#102a45] transition-colors">Clear filters</button>
     </div>
   );
 
@@ -636,11 +636,11 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
               <button
                 type="button"
                 onClick={() => setFilterOpen((o) => !o)}
-                className={`relative h-10 w-10 flex items-center justify-center rounded-lg border transition-colors ${filtersActive ? 'border-[#5ba8a0] bg-[#5ba8a0]/10 text-[#2b4257]' : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'}`}
+                className={`relative h-10 w-10 flex items-center justify-center rounded-lg border transition-colors ${filtersActive ? 'border-[#457aab] bg-[#457aab]/10 text-[#102a45]' : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'}`}
                 aria-label="Filter results"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                {filtersActive && <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#5ba8a0]" />}
+                {filtersActive && <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#457aab]" />}
               </button>
               {filterOpen && (
                 <div className="absolute top-full mt-1 right-0 z-50 w-64 rounded-lg border bg-white shadow-lg p-4 space-y-4">
@@ -652,7 +652,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                           key={s}
                           type="button"
                           onClick={() => setStatusFilter(s)}
-                          className={`flex-1 text-xs font-medium px-2 py-1.5 rounded-md border transition-colors ${statusFilter === s ? 'border-[#5ba8a0] bg-[#5ba8a0]/10 text-[#2b4257]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                          className={`flex-1 text-xs font-medium px-2 py-1.5 rounded-md border transition-colors ${statusFilter === s ? 'border-[#457aab] bg-[#457aab]/10 text-[#102a45]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                         >
                           {s === 'all' ? 'All' : s === 'normal' ? 'Normal' : 'Abnormal'}
                         </button>
@@ -668,7 +668,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                           key={d}
                           type="button"
                           onClick={() => setDateFilter(d)}
-                          className={`w-full text-left text-xs font-medium px-2.5 py-1.5 rounded-md border transition-colors ${dateFilter === d ? 'border-[#5ba8a0] bg-[#5ba8a0]/10 text-[#2b4257]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                          className={`w-full text-left text-xs font-medium px-2.5 py-1.5 rounded-md border transition-colors ${dateFilter === d ? 'border-[#457aab] bg-[#457aab]/10 text-[#102a45]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                         >
                           {DATE_RANGE_LABELS[d]}
                         </button>
@@ -700,7 +700,7 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                     )}
                   </div>
                   {filtersActive && (
-                    <button type="button" onClick={clearFilters} className="text-xs font-medium text-[#5ba8a0] hover:text-[#2b4257] transition-colors">
+                    <button type="button" onClick={clearFilters} className="text-xs font-medium text-[#457aab] hover:text-[#102a45] transition-colors">
                       Clear filters
                     </button>
                   )}
@@ -736,10 +736,10 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                               <Tooltip
                                 formatter={(v: number) => [`${v} ${VITAL_UNITS[type]}`, 'Value']}
                                 separator=": "
-                                itemStyle={{ color: '#2b4257' }}
+                                itemStyle={{ color: '#102a45' }}
                               />
-                              <Line type="monotone" dataKey="value" stroke="#2b4257" strokeWidth={2} dot={{ r: 3, fill: '#2b4257' }} />
-                              {type === 'BLOOD_PRESSURE' && <Line type="monotone" dataKey="value2" stroke="#6da7cc" strokeWidth={2} dot={{ r: 3, fill: '#6da7cc' }} />}
+                              <Line type="monotone" dataKey="value" stroke="#102a45" strokeWidth={2} dot={{ r: 3, fill: '#102a45' }} />
+                              {type === 'BLOOD_PRESSURE' && <Line type="monotone" dataKey="value2" stroke="#244a73" strokeWidth={2} dot={{ r: 3, fill: '#244a73' }} />}
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
@@ -898,10 +898,10 @@ export function LabsVitals({ embedded = false, pendingAddType, onAddHandled, scr
                                     <Tooltip
                                       formatter={(v: number) => [`${v} ${VITAL_UNITS[type]}`, 'Value']}
                                       separator=": "
-                                      itemStyle={{ color: '#2b4257' }}
+                                      itemStyle={{ color: '#102a45' }}
                                     />
-                                    <Line type="monotone" dataKey="value" stroke="#2b4257" strokeWidth={2} dot={{ r: 3, fill: '#2b4257' }} />
-                                    {type === 'BLOOD_PRESSURE' && <Line type="monotone" dataKey="value2" stroke="#6da7cc" strokeWidth={2} dot={{ r: 3, fill: '#6da7cc' }} />}
+                                    <Line type="monotone" dataKey="value" stroke="#102a45" strokeWidth={2} dot={{ r: 3, fill: '#102a45' }} />
+                                    {type === 'BLOOD_PRESSURE' && <Line type="monotone" dataKey="value2" stroke="#244a73" strokeWidth={2} dot={{ r: 3, fill: '#244a73' }} />}
                                   </LineChart>
                                 </ResponsiveContainer>
                               </div>

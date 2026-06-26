@@ -341,7 +341,7 @@ export function Dashboard() {
         <div className="flex items-start justify-between gap-3 mb-0.5">
           <h1 className="text-xl md:text-3xl font-bold text-gray-900">
             Good {getTimeOfDay()},{' '}
-            <span style={{ background: 'linear-gradient(135deg, #91c5bf 0%, #6da7cc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            <span style={{ background: 'linear-gradient(135deg, #adcce6 0%, #244a73 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
               {userName.split(' ')[0]}
             </span>!
           </h1>
@@ -367,13 +367,13 @@ export function Dashboard() {
           <Card
             className="border-transparent"
             style={{
-              background: 'linear-gradient(white, white) padding-box, linear-gradient(to right, #6da7cc, #91c5bf) border-box',
+              background: 'linear-gradient(white, white) padding-box, linear-gradient(to right, #244a73, #adcce6) border-box',
               border: '3px solid transparent',
             }}
           >
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0" style={{ color: '#2b4257' }}>
-                <ClipboardList className="h-5 w-5" style={{ color: '#2b4257' }} />
+              <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0" style={{ color: '#102a45' }}>
+                <ClipboardList className="h-5 w-5" style={{ color: '#102a45' }} />
                 Action Items
               </CardTitle>
             </CardHeader>
@@ -416,7 +416,7 @@ export function Dashboard() {
             <Card className="flex flex-col h-[300px]">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
                 <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
-                  <Calendar className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
+                  <Calendar className="h-5 w-5 shrink-0" style={{ color: '#102a45' }} />
                   Upcoming Appointments
                 </CardTitle>
                 <Link to="/appointments" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
@@ -439,8 +439,8 @@ export function Dashboard() {
                         to={`/appointments?detail=${a.id}`}
                         className="flex items-start gap-3 py-3 border-b last:border-0 hover:bg-gray-50 rounded transition-colors"
                       >
-                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
-                          <Calendar className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
+                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d6e6f5' }}>
+                          <Calendar className="h-3.5 w-3.5" style={{ color: '#102a45' }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">{a.providerName}</p>
@@ -462,7 +462,7 @@ export function Dashboard() {
             <Card className="flex flex-col h-[300px]">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
                 <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
-                  <Pill className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
+                  <Pill className="h-5 w-5 shrink-0" style={{ color: '#102a45' }} />
                   Active Medications
                 </CardTitle>
                 <Link to="/medications" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
@@ -481,8 +481,8 @@ export function Dashboard() {
                   <div className="flex-1 overflow-y-auto space-y-0">
                     {data.medications.map((m) => (
                       <div key={m.id} className="flex items-start gap-3 py-3 border-b last:border-0">
-                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
-                          <Pill className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
+                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d6e6f5' }}>
+                          <Pill className="h-3.5 w-3.5" style={{ color: '#102a45' }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900">{m.name}</p>
@@ -503,7 +503,7 @@ export function Dashboard() {
             <Card className="flex flex-col h-[300px]">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
                 <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
-                  <Stethoscope className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
+                  <Stethoscope className="h-5 w-5 shrink-0" style={{ color: '#102a45' }} />
                   Health Conditions
                 </CardTitle>
                 <Link to="/history" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
@@ -519,8 +519,8 @@ export function Dashboard() {
                   <div className="flex-1 overflow-y-auto space-y-0">
                     {data.conditions.map((c) => (
                       <div key={c.id} className="flex items-start gap-3 py-3 border-b last:border-0">
-                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
-                          <Stethoscope className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
+                        <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d6e6f5' }}>
+                          <Stethoscope className="h-3.5 w-3.5" style={{ color: '#102a45' }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900">{c.name}</p>
@@ -540,7 +540,7 @@ export function Dashboard() {
             <Card className="flex flex-col h-[300px]">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
                 <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
-                  <FlaskConical className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
+                  <FlaskConical className="h-5 w-5 shrink-0" style={{ color: '#102a45' }} />
                   Recent Test Results
                 </CardTitle>
                 <Link to="/labs" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
@@ -594,8 +594,8 @@ export function Dashboard() {
           {/* Health Intelligence Excerpt */}
           <Card className="flex flex-col h-[300px]">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0" style={{ color: '#2b4257' }}>
-                <Brain className="h-5 w-5" style={{ color: '#2b4257' }} />
+              <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0" style={{ color: '#102a45' }}>
+                <Brain className="h-5 w-5" style={{ color: '#102a45' }} />
                 Health Intelligence Report
               </CardTitle>
               <Link to="/insights" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
@@ -637,9 +637,9 @@ export function Dashboard() {
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Key Insights</p>
                       {(data.latestInsight.insights as InsightItem[]).slice(0, 2).map((insight, i) => {
                         const confidenceStyles: Record<string, { bg: string; text: string; dot: string }> = {
-                          high:     { bg: '#2b4257', text: '#ffffff', dot: '#ffffff' },
-                          moderate: { bg: '#6da7cc', text: '#ffffff', dot: '#ffffff' },
-                          low:      { bg: '#e3ebf2', text: '#2b4257', dot: '#2b4257' },
+                          high:     { bg: '#102a45', text: '#ffffff', dot: '#ffffff' },
+                          moderate: { bg: '#244a73', text: '#ffffff', dot: '#ffffff' },
+                          low:      { bg: '#d6e6f5', text: '#102a45', dot: '#102a45' },
                         };
                         const style = confidenceStyles[insight.confidence] ?? confidenceStyles.low;
                         return (
@@ -670,7 +670,7 @@ export function Dashboard() {
           <Card className="flex flex-col h-[300px]">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm md:text-base flex items-center gap-2 min-w-0">
-                <FileText className="h-5 w-5 shrink-0" style={{ color: '#2b4257' }} />
+                <FileText className="h-5 w-5 shrink-0" style={{ color: '#102a45' }} />
                 Recent Records
               </CardTitle>
               <Link to="/records" className="text-sm text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap">
@@ -696,8 +696,8 @@ export function Dashboard() {
                       onClick={() => openPreview(r)}
                       className="w-full flex items-center gap-3 rounded-lg border bg-gray-50/50 px-3 py-2.5 text-left hover:bg-gray-50 transition-colors"
                     >
-                      <div className="rounded-lg p-1.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
-                        <FileText className="h-3.5 w-3.5" style={{ color: '#1a5c55' }} />
+                      <div className="rounded-lg p-1.5 shrink-0" style={{ backgroundColor: '#d6e6f5' }}>
+                        <FileText className="h-3.5 w-3.5" style={{ color: '#102a45' }} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-gray-900 truncate">{r.fileName}</p>

@@ -16,11 +16,12 @@ export default {
       colors: {
         /* Fila brand palette — direct hex utilities */
         fila: {
-          primary:    '#2b4257',
-          secondary:  '#91c5bf',
-          background: '#e3ebf2',
-          accent:     '#777fc5',
-          neutral:    '#b1b4cb',
+          primary:    '#102a45',
+          secondary:  '#244a73',
+          accent:     '#457aab',
+          neutral:    '#80add1',
+          light:      '#adcce6',
+          background: '#d6e6f5',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

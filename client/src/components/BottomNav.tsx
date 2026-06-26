@@ -18,7 +18,7 @@ export function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-40 flex md:hidden border-t"
-      style={{ background: 'linear-gradient(135deg, #6da7cc 0%, #91c5bf 100%)', borderColor: '#e3ebf2' }}
+      style={{ background: 'linear-gradient(135deg, #244a73 0%, #adcce6 100%)', borderColor: '#d6e6f5' }}
     >
       {navItems.map(({ to, icon: Icon, label }) => (
         <NavLink
@@ -27,13 +27,13 @@ export function BottomNav() {
           className={({ isActive }) =>
             cn(
               'flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors',
-              isActive ? 'bg-white/30 text-[#2b4257]' : 'text-[#2b4257]/70 hover:bg-white/20 hover:text-[#2b4257]'
+              isActive ? 'bg-white/30 text-[#102a45]' : 'text-[#102a45]/70 hover:bg-white/20 hover:text-[#102a45]'
             )
           }
         >
           {({ isActive }) => (
             <>
-              <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-[#2b4257]' : 'text-[#2b4257]/70')} />
+              <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-[#102a45]' : 'text-[#102a45]/70')} />
               <span>{label}</span>
             </>
           )}
@@ -41,7 +41,7 @@ export function BottomNav() {
       ))}
       <button
         onClick={() => logout()}
-        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors text-[#2b4257]/70 hover:bg-white/20 hover:text-[#2b4257]"
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors text-[#102a45]/70 hover:bg-white/20 hover:text-[#102a45]"
       >
         <LogOut className="h-5 w-5 shrink-0" />
         <span>Sign out</span>

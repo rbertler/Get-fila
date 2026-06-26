@@ -521,7 +521,7 @@ export function Records() {
         {/* Upload progress bar */}
         {uploading && (
           <div className="rounded-xl border bg-white px-4 py-3 space-y-2">
-            <p className="text-sm font-medium text-center" style={{ color: '#2b4257' }}>
+            <p className="text-sm font-medium text-center" style={{ color: '#102a45' }}>
               Uploading and extracting text
             </p>
             <div className="h-2 w-full rounded-full overflow-hidden bg-gray-100">
@@ -529,7 +529,7 @@ export function Records() {
                 className="h-full rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${uploadProgress === 0 ? 8 : uploadProgress}%`,
-                  background: 'linear-gradient(135deg, #6da7cc 0%, #91c5bf 100%)',
+                  background: 'linear-gradient(135deg, #244a73 0%, #adcce6 100%)',
                 }}
               />
             </div>
@@ -542,7 +542,7 @@ export function Records() {
             <p className="text-sm font-medium text-gray-600 mb-1">Ready to upload</p>
             {stagedFiles.map((f, i) => (
               <div key={i} className="flex items-center gap-3 rounded-lg border bg-gray-50 px-3 py-2">
-                <FileText className="h-4 w-4 shrink-0" style={{ color: '#1a5c55' }} />
+                <FileText className="h-4 w-4 shrink-0" style={{ color: '#102a45' }} />
                 <span className="flex-1 text-sm text-gray-700 truncate">{f.name}</span>
                 <span className="text-xs text-gray-400 shrink-0">{(f.size / 1024 / 1024).toFixed(1)} MB</span>
                 <button
@@ -890,10 +890,10 @@ export function Records() {
               <button
                 onClick={() => openPreview(r)}
                 className="rounded-lg p-1.5 shrink-0 transition-colors"
-                style={{ backgroundColor: '#d4eeeb' }}
+                style={{ backgroundColor: '#d6e6f5' }}
                 title="Preview"
               >
-                <FileText className="h-4 w-4" style={{ color: '#1a5c55' }} />
+                <FileText className="h-4 w-4" style={{ color: '#102a45' }} />
               </button>
               <button
                 onClick={() => openPreview(r)}
@@ -1015,7 +1015,7 @@ export function Records() {
           <DialogHeader>
             <div className="flex items-center gap-2.5">
               <div className="rounded-lg p-2 shrink-0" style={{ backgroundColor: '#daf2ef' }}>
-                <Share2 className="h-4 w-4" style={{ color: '#1a5c55' }} />
+                <Share2 className="h-4 w-4" style={{ color: '#102a45' }} />
               </div>
               <div>
                 <DialogTitle>Share with Provider</DialogTitle>

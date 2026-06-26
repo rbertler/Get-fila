@@ -331,8 +331,8 @@ function AppointmentList({
           onClick={() => onDetail(a)}
           className="rounded-lg border bg-white p-3 flex items-start gap-3 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-150"
         >
-          <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d4eeeb' }}>
-            <Calendar className="h-4 w-4" style={{ color: '#1a5c55' }} />
+          <div className="rounded-lg p-1.5 mt-0.5 shrink-0" style={{ backgroundColor: '#d6e6f5' }}>
+            <Calendar className="h-4 w-4" style={{ color: '#102a45' }} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-0.5">
@@ -377,7 +377,7 @@ function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit,
         <DialogHeader>
           <div className="flex items-start gap-3">
             <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#daf2ef' }}>
-              <Calendar className="h-5 w-5" style={{ color: '#1a5c55' }} />
+              <Calendar className="h-5 w-5" style={{ color: '#102a45' }} />
             </div>
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-lg leading-snug">{a.providerName}</DialogTitle>
@@ -435,7 +435,7 @@ function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit,
           {/* Provider contact info */}
           {p && (p.phone || p.address || p.fax || p.email || p.website || p.affiliation) && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#6da7cc' }}>Provider Contact</p>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#244a73' }}>Provider Contact</p>
               <div className="rounded-lg border bg-gray-50 divide-y divide-gray-100">
                 {p.affiliation && (
                   <div className="px-4 py-3 flex items-center gap-3">

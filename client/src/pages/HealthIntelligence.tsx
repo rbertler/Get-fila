@@ -13,9 +13,9 @@ import { toast } from '@/hooks/useToast';
 import { format } from 'date-fns';
 
 const CONFIDENCE_STYLES: Record<InsightItem['confidence'], { background: string; color: string }> = {
-  high:     { background: '#2b4257', color: '#ffffff' },
-  moderate: { background: '#6da7cc', color: '#ffffff' },
-  low:      { background: '#e3ebf2', color: '#2b4257' },
+  high:     { background: '#102a45', color: '#ffffff' },
+  moderate: { background: '#244a73', color: '#ffffff' },
+  low:      { background: '#d6e6f5', color: '#102a45' },
 };
 
 const CONFIDENCE_LABELS: Record<InsightItem['confidence'], string> = {
@@ -26,7 +26,7 @@ const CONFIDENCE_LABELS: Record<InsightItem['confidence'], string> = {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#6da7cc' }}>
+    <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#244a73' }}>
       {children}
     </p>
   );
@@ -120,11 +120,11 @@ function ReportCard({ report }: { report: HealthInsightReport }) {
       {insights.length > 0 && (
         <div className="px-4 py-3">
           <SectionLabel>Talking Points for Provider</SectionLabel>
-          <div className="rounded-lg border overflow-hidden" style={{ background: '#c8ddf0', borderColor: '#2b4257' }}>
+          <div className="rounded-lg border overflow-hidden" style={{ background: '#adcce6', borderColor: '#102a45' }}>
             {insights.map((insight, i) => (
-              <div key={i} className="flex items-start gap-2 px-3 py-2.5" style={{ borderTop: i > 0 ? '1px solid #2b4257' : 'none' }}>
-                <BookOpen className="h-3.5 w-3.5 shrink-0 mt-[2px]" style={{ color: '#2b4257' }} />
-                <p className="text-xs leading-relaxed" style={{ color: '#2b4257' }}>{insight.suggestedDiscussion}</p>
+              <div key={i} className="flex items-start gap-2 px-3 py-2.5" style={{ borderTop: i > 0 ? '1px solid #102a45' : 'none' }}>
+                <BookOpen className="h-3.5 w-3.5 shrink-0 mt-[2px]" style={{ color: '#102a45' }} />
+                <p className="text-xs leading-relaxed" style={{ color: '#102a45' }}>{insight.suggestedDiscussion}</p>
               </div>
             ))}
           </div>
@@ -253,7 +253,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
       <DialogContent className="max-w-xl max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <SlidersHorizontal className="h-4 w-4" style={{ color: '#6da7cc' }} />
+            <SlidersHorizontal className="h-4 w-4" style={{ color: '#244a73' }} />
             Focused Analysis
           </DialogTitle>
           <p className="text-sm text-gray-500 mt-0.5">Select the specific entries to analyze.</p>
@@ -267,7 +267,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
               placeholder="Search conditions, labs, imaging"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6da7cc]/40"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#244a73]/40"
             />
           </div>
         )}
@@ -288,7 +288,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                 >
                   <span className="text-sm font-semibold text-gray-700">Health History</span>
                   <div className="flex items-center gap-2">
-                    {selectedEntries.size > 0 && <span className="text-xs text-[#6da7cc] font-medium">{selectedEntries.size} selected</span>}
+                    {selectedEntries.size > 0 && <span className="text-xs text-[#244a73] font-medium">{selectedEntries.size} selected</span>}
                     {expanded.has('history') ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
                   </div>
                 </button>
@@ -299,7 +299,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                         <p className="px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide bg-gray-50">{CATEGORY_LABELS[cat] ?? cat}</p>
                         {items.map(e => (
                           <label key={e.id} className="flex items-center gap-3 px-4 py-2.5 bg-white hover:bg-blue-50/40 cursor-pointer transition-colors">
-                            <input type="checkbox" checked={selectedEntries.has(e.id)} onChange={() => toggleEntry(e.id)} className="h-4 w-4 rounded accent-[#2b4257]" />
+                            <input type="checkbox" checked={selectedEntries.has(e.id)} onChange={() => toggleEntry(e.id)} className="h-4 w-4 rounded accent-[#102a45]" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-gray-900">{e.name}</p>
                               {e.startDate && <p className="text-xs text-gray-400">{format(parseDate(e.startDate), 'MMM yyyy')}{e.endDate ? ` – ${format(parseDate(e.endDate), 'MMM yyyy')}` : ''}</p>}
@@ -322,7 +322,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                 >
                   <span className="text-sm font-semibold text-gray-700">Lab Tests</span>
                   <div className="flex items-center gap-2">
-                    {selectedLabs.size > 0 && <span className="text-xs text-[#6da7cc] font-medium">{selectedLabs.size} selected</span>}
+                    {selectedLabs.size > 0 && <span className="text-xs text-[#244a73] font-medium">{selectedLabs.size} selected</span>}
                     {expanded.has('labs') ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
                   </div>
                 </button>
@@ -330,7 +330,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                   <div className="divide-y divide-gray-100">
                     {filteredLabs.map(l => (
                       <label key={l.testName} className="flex items-center gap-3 px-4 py-2.5 bg-white hover:bg-blue-50/40 cursor-pointer transition-colors">
-                        <input type="checkbox" checked={selectedLabs.has(l.testName)} onChange={() => toggleLab(l.testName)} className="h-4 w-4 rounded accent-[#2b4257]" />
+                        <input type="checkbox" checked={selectedLabs.has(l.testName)} onChange={() => toggleLab(l.testName)} className="h-4 w-4 rounded accent-[#102a45]" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-900">{l.testName}</p>
                           <p className="text-xs text-gray-400">Latest: {format(parseDate(l.latestDate), 'MMM d, yyyy')}</p>
@@ -351,7 +351,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                 >
                   <span className="text-sm font-semibold text-gray-700">Imaging Studies</span>
                   <div className="flex items-center gap-2">
-                    {selectedImaging.size > 0 && <span className="text-xs text-[#6da7cc] font-medium">{selectedImaging.size} selected</span>}
+                    {selectedImaging.size > 0 && <span className="text-xs text-[#244a73] font-medium">{selectedImaging.size} selected</span>}
                     {expanded.has('imaging') ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
                   </div>
                 </button>
@@ -359,7 +359,7 @@ function FocusedAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun:
                   <div className="divide-y divide-gray-100">
                     {filteredImaging.map(s => (
                       <label key={s.id} className="flex items-center gap-3 px-4 py-2.5 bg-white hover:bg-blue-50/40 cursor-pointer transition-colors">
-                        <input type="checkbox" checked={selectedImaging.has(s.id)} onChange={() => toggleImaging(s.id)} className="h-4 w-4 rounded accent-[#2b4257]" />
+                        <input type="checkbox" checked={selectedImaging.has(s.id)} onChange={() => toggleImaging(s.id)} className="h-4 w-4 rounded accent-[#102a45]" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-900">{s.description ?? `${s.studyType} – ${s.bodyPart}`}</p>
                           {s.studyDate && <p className="text-xs text-gray-400">{format(parseDate(s.studyDate), 'MMM d, yyyy')}</p>}
@@ -413,7 +413,7 @@ function ThematicAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Tag className="h-4 w-4" style={{ color: '#6da7cc' }} />
+            <Tag className="h-4 w-4" style={{ color: '#244a73' }} />
             Thematic Analysis
           </DialogTitle>
           <p className="text-sm text-gray-500 mt-0.5">Choose a health theme to analyse.</p>
@@ -426,7 +426,7 @@ function ThematicAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun
               onClick={() => setSelected(theme)}
               className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
               style={selected === theme
-                ? { background: '#2b4257', color: '#fff', borderColor: '#2b4257' }
+                ? { background: '#102a45', color: '#fff', borderColor: '#102a45' }
                 : { background: '#fff', color: '#374151', borderColor: '#d1d5db' }}
             >
               {theme}
@@ -436,7 +436,7 @@ function ThematicAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun
             onClick={() => setSelected('__custom__')}
             className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
             style={selected === '__custom__'
-              ? { background: '#2b4257', color: '#fff', borderColor: '#2b4257' }
+              ? { background: '#102a45', color: '#fff', borderColor: '#102a45' }
               : { background: '#fff', color: '#374151', borderColor: '#d1d5db' }}
           >
             Custom…
@@ -450,7 +450,7 @@ function ThematicAnalysisDialog({ onClose, onRun }: { onClose: () => void; onRun
             placeholder="e.g. Sleep, Fertility, Chronic Pain"
             value={custom}
             onChange={(e) => setCustom(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6da7cc]/40"
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#244a73]/40"
           />
         )}
 
@@ -642,10 +642,10 @@ export function HealthIntelligence() {
                       variant="outline"
                       className="text-xs shrink-0"
                       style={r.reportType === 'focused'
-                        ? { background: '#e3ebf2', color: '#2b4257', border: 'none' }
+                        ? { background: '#d6e6f5', color: '#102a45', border: 'none' }
                         : r.reportType === 'thematic'
-                        ? { background: '#d4eeeb', color: '#1a5c55', border: 'none' }
-                        : { background: '#2b4257', color: '#fff', border: 'none' }}
+                        ? { background: '#d6e6f5', color: '#102a45', border: 'none' }
+                        : { background: '#102a45', color: '#fff', border: 'none' }}
                     >
                       {r.reportType === 'focused' ? 'Focused' : r.reportType === 'thematic' ? 'Themed' : 'Full'}
                     </Badge>

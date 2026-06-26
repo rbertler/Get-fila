@@ -102,7 +102,7 @@ export function Medications({ embedded = false, pendingAddType, onAddHandled, sc
       const el = document.getElementById(`med-${scrollToEntryId}`);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.style.outline = '2px solid #6da7cc';
+        el.style.outline = '2px solid #244a73';
         el.style.outlineOffset = '3px';
         setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 2000);
       }
@@ -390,8 +390,8 @@ function MedCard({
     <div className={`rounded-xl border bg-white p-3 flex flex-col min-h-[100px] ${past ? 'opacity-70' : ''}`}>
       <div className="flex items-start justify-between gap-2 flex-1 grow">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#d4eeeb' }}>
-            <Pill className="h-4 w-4" style={{ color: '#1a5c55' }} />
+          <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#d6e6f5' }}>
+            <Pill className="h-4 w-4" style={{ color: '#102a45' }} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 leading-snug">{entry.name}</p>
@@ -431,10 +431,10 @@ function MedCard({
             </span>
           )}
           {entry.category === 'MEDICATION' && (
-            <Badge variant="outline" className="text-xs" style={{ background: '#2b4257', color: '#c8ddf0', border: 'none' }}>Medication</Badge>
+            <Badge variant="outline" className="text-xs" style={{ background: '#102a45', color: '#adcce6', border: 'none' }}>Medication</Badge>
           )}
           {entry.category === 'SUPPLEMENT' && (
-            <Badge variant="outline" className="text-xs" style={{ background: '#c8ddf0', color: '#2b4257', border: 'none' }}>Supplement</Badge>
+            <Badge variant="outline" className="text-xs" style={{ background: '#adcce6', color: '#102a45', border: 'none' }}>Supplement</Badge>
           )}
           {entry.isManual ? (
             <Badge variant="manual" className="text-xs">Manual</Badge>
