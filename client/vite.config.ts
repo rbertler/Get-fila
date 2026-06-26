@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['F Logo Light (Small).png'],
+      includeAssets: ['F Logo Light (192x192).png', 'F Logo Light (512x512).png'],
       manifest: {
         name: 'Fila – Health Intelligence',
         short_name: 'Fila',
@@ -20,9 +20,9 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          { src: 'F Logo Light (Small).png', sizes: '192x192', type: 'image/png' },
-          { src: 'F Logo Light (Large).png', sizes: '512x512', type: 'image/png' },
-          { src: 'F Logo Light (Large).png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: 'F Logo Light (192x192).png', sizes: '192x192', type: 'image/png' },
+          { src: 'F Logo Light (512x512).png', sizes: '512x512', type: 'image/png' },
+          { src: 'F Logo Light (512x512).png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
       workbox: {

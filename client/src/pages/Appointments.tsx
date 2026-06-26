@@ -376,7 +376,7 @@ function AppointmentDetailDialog({ appointment: a, provider: p, onClose, onEdit,
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-start gap-3">
-            <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#daf2ef' }}>
+            <div className="rounded-lg p-2 shrink-0 mt-0.5" style={{ backgroundColor: '#d6e6f5' }}>
               <Calendar className="h-5 w-5" style={{ color: '#102a45' }} />
             </div>
             <div className="flex-1 min-w-0">

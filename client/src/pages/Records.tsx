@@ -1014,7 +1014,7 @@ export function Records() {
         <DialogContent className="max-w-[500px]">
           <DialogHeader>
             <div className="flex items-center gap-2.5">
-              <div className="rounded-lg p-2 shrink-0" style={{ backgroundColor: '#daf2ef' }}>
+              <div className="rounded-lg p-2 shrink-0" style={{ backgroundColor: '#d6e6f5' }}>
                 <Share2 className="h-4 w-4" style={{ color: '#102a45' }} />
               </div>
               <div>

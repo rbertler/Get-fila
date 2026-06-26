@@ -35,24 +35,24 @@ const CATEGORY_LABELS: Record<HistoryCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<HistoryCategory, string> = {
-  CONDITION:      'bg-[#f5fafd] border-[#244a73]/25',
-  MEDICATION:     'bg-[#d6e6f5] border-[#457aab]/25',
-  SUPPLEMENT:     'bg-[#f5f8fc] border-[#244a73]/20',
+  CONDITION:      'bg-[#e6f0fa] border-[#225380]/25',
+  MEDICATION:     'bg-[#c2dcf0] border-[#0a2238]/25',
+  SUPPLEMENT:     'bg-[#d4e8f7] border-[#0c2d5c]/20',
   ALLERGY:        'bg-[#fff9f9] border-[#9b2c2c]/20',
-  SURGERY:        'bg-[#d6e6f5] border-[#102a45]/20',
-  VACCINATION:    'bg-[#f5fafd] border-[#244a73]/20',
-  FAMILY_HISTORY: 'bg-[#f6f8fa] border-[#102a45]/15',
+  SURGERY:        'bg-[#c2dcf0] border-[#0f3352]/20',
+  VACCINATION:    'bg-[#e6f0fa] border-[#07214a]/20',
+  FAMILY_HISTORY: 'bg-[#e6f0fa] border-[#102a45]/15',
 };
 
 // Dot color on the timeline line
 const CATEGORY_DOT: Record<HistoryCategory, string> = {
-  CONDITION: 'bg-[#adcce6]',
-  MEDICATION: 'bg-[#102a45]',
-  SUPPLEMENT: 'bg-[#102a45]',
-  ALLERGY: 'bg-[#5c3a6e]',
-  SURGERY: 'bg-[#232861]',
-  VACCINATION: 'bg-[#6b3a5e]',
-  FAMILY_HISTORY: 'bg-[#4a4e5a]',
+  CONDITION: 'bg-[#96bddb]',
+  MEDICATION: 'bg-[#578bb8]',
+  SUPPLEMENT: 'bg-[#0c2d5c]',
+  ALLERGY: 'bg-[#9b2c2c]',
+  SURGERY: 'bg-[#6b9cc4]',
+  VACCINATION: 'bg-[#07214a]',
+  FAMILY_HISTORY: 'bg-[#245282]',
 };
 
 const CATEGORY_BADGE_VARIANTS: Record<HistoryCategory, 'destructive' | 'info' | 'warning' | 'success' | 'secondary' | 'outline' | 'medication' | 'supplement' | 'condition' | 'surgery' | 'vaccination' | 'dark'> = {

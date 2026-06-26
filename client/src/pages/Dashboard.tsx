@@ -635,25 +635,17 @@ export function Dashboard() {
                   {(data.latestInsight.insights as InsightItem[]).length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Key Insights</p>
-                      {(data.latestInsight.insights as InsightItem[]).slice(0, 2).map((insight, i) => {
-                        const confidenceStyles: Record<string, { bg: string; text: string; dot: string }> = {
-                          high:     { bg: '#102a45', text: '#ffffff', dot: '#ffffff' },
-                          moderate: { bg: '#244a73', text: '#ffffff', dot: '#ffffff' },
-                          low:      { bg: '#d6e6f5', text: '#102a45', dot: '#102a45' },
-                        };
-                        const style = confidenceStyles[insight.confidence] ?? confidenceStyles.low;
-                        return (
-                          <div key={i} className="flex items-start gap-2.5 rounded-lg px-3 py-2.5" style={{ background: style.bg }}>
-                            <span className="mt-0.5 text-base leading-none" style={{ color: style.dot }}>•</span>
+                      {(data.latestInsight.insights as InsightItem[]).slice(0, 2).map((insight, i) => (
+                          <div key={i} className="flex items-start gap-2.5 rounded-lg px-3 py-2.5" style={{ background: '#d6e6f5' }}>
+                            <span className="mt-1 text-base leading-none" style={{ color: '#102a45' }}>•</span>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium" style={{ color: style.text }}>{insight.title}</p>
+                              <p className="text-sm font-semibold" style={{ color: '#102a45' }}>{insight.title}</p>
                               {insight.suggestedDiscussion && (
-                                <p className="text-xs mt-0.5" style={{ color: style.text, opacity: 0.8 }}>{insight.suggestedDiscussion}</p>
+                                <p className="text-xs mt-0.5" style={{ color: '#457aab' }}>{insight.suggestedDiscussion}</p>
                               )}
                             </div>
                           </div>
-                        );
-                      })}
+                      ))}
                       {data.latestInsight.insights.length > 2 && (
                         <Link to="/insights" className="text-sm text-primary hover:underline block text-center pt-1">
                           View {data.latestInsight.insights.length - 2} more insight{data.latestInsight.insights.length - 2 > 1 ? 's' : ''} →
