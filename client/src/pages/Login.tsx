@@ -36,10 +36,10 @@ export function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'linear-gradient(135deg, #244a73 0%, #adcce6 45%)' }}>
+      style={{ background: '#d6e6f5' }}>
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
-          <FilaLogo size="lg" variant="light" />
+          <FilaLogo size="lg" variant="gradient" />
         </div>
 
         <Card>
