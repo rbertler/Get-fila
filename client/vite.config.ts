@@ -8,25 +8,25 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
+      includeAssets: ['F Logo Light (Small).png'],
       manifest: {
         name: 'Fila – Health Intelligence',
         short_name: 'Fila',
         description: 'Your personal health intelligence platform',
-        theme_color: '#2b4257',
-        background_color: '#e3ebf2',
+        theme_color: '#102a45',
+        background_color: '#d6e6f5',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
         icons: [
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: 'F Logo Light (Small).png', sizes: '192x192', type: 'image/png' },
+          { src: 'F Logo Light (Large).png', sizes: '512x512', type: 'image/png' },
+          { src: 'F Logo Light (Large).png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /^\/api\//,
