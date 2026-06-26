@@ -641,8 +641,8 @@ export function Dashboard() {
                             <span className="mt-1 text-base leading-none" style={{ color: '#102a45' }}>•</span>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold" style={{ color: '#102a45' }}>{insight.title}</p>
-                              {insight.suggestedDiscussion && (
-                                <p className="text-xs mt-0.5" style={{ color: '#457aab' }}>{insight.suggestedDiscussion}</p>
+                              {insight.description && (
+                                <p className="text-xs mt-0.5" style={{ color: '#457aab' }}>{insight.description}</p>
                               )}
                             </div>
                           </div>
