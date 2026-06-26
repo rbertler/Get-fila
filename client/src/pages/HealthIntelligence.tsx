@@ -535,13 +535,11 @@ export function HealthIntelligence() {
 
   const handleDownload = async (report: HealthInsightReport) => {
     try {
-      const res = await fetch(`/api/insights/${report.id}/pdf`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Download failed');
-      const blob = await res.blob();
+      const blob = await api.blob(`/insights/${report.id}/pdf`);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `health-intelligence-${format(parseDate(report.generatedAt), 'yyyy-MM-dd')}.pdf`;
+      a.download = `${format(parseDate(report.generatedAt), 'MMMM yyyy')} Health Intelligence Report.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
