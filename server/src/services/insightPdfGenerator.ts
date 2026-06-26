@@ -133,9 +133,8 @@ export async function generateInsightPdf(reportId: string): Promise<Buffer> {
 
     // Title — snug below logo (logo bottom ≈ 75)
     bold(doc);
-    const titleMonth = new Date(report.generatedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     doc.fontSize(22).fillColor(NAVY)
-      .text(`${titleMonth} Health Intelligence Report`, MARGIN, 84, { width: CW, align: 'center' });
+      .text('Health Intelligence Report', MARGIN, 84, { width: CW, align: 'center' });
 
     // Set cursor just below title
     doc.y = 118;
