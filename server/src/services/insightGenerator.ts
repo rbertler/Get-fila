@@ -19,6 +19,7 @@ interface SupportingEvidence {
 
 export interface InsightItem {
   title: string;
+  description: string;
   confidence: 'low' | 'moderate' | 'high';
   supportingEvidence: SupportingEvidence[];
   suggestedDiscussion: string;
@@ -436,6 +437,7 @@ export async function generateInsights(userId: string, scope?: FocusedScope): Pr
   const validConfidence = new Set(['low', 'moderate', 'high']);
   const sanitisedInsights: InsightItem[] = parsed.insights.map((ins) => ({
     title: String(ins.title ?? '').trim(),
+    description: String(ins.description ?? '').trim(),
     confidence: validConfidence.has(ins.confidence) ? ins.confidence : 'low',
     supportingEvidence: (ins.supportingEvidence ?? []).map((ev) => ({
       text: String(ev.text ?? '').trim(),
@@ -526,6 +528,7 @@ export async function generateThematic(userId: string, theme: string): Promise<s
   const validConfidence = new Set(['low', 'moderate', 'high']);
   const sanitisedInsights: InsightItem[] = parsed.insights.map((ins) => ({
     title: String(ins.title ?? '').trim(),
+    description: String(ins.description ?? '').trim(),
     confidence: validConfidence.has(ins.confidence) ? ins.confidence : 'low',
     supportingEvidence: (ins.supportingEvidence ?? []).map((ev) => ({
       text: String(ev.text ?? '').trim(),

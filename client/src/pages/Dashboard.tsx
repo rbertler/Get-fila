@@ -78,6 +78,7 @@ interface DashboardRecord {
 
 interface InsightItem {
   title: string;
+  description?: string;
   confidence: string;
   suggestedDiscussion?: string;
 }

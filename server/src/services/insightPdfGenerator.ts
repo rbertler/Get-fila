@@ -32,7 +32,7 @@ const FONT_MED    = path.join(FONTS, 'Inter-Medium.ttf');
 const FONT_SEMI   = path.join(FONTS, 'Inter-SemiBold.ttf');
 const FONT_BOLD   = path.join(FONTS, 'Inter-Bold.ttf');
 const FONT_ITALIC = path.join(FONTS, 'Inter-Italic.ttf');
-const LOGO_PATH   = path.resolve(process.cwd(), '../client/public/Fila_Gradient_Transparent.png');
+const LOGO_PATH   = path.resolve(process.cwd(), 'assets/fila-logo-pdf.png');
 
 const hasFont = (p: string) => fs.existsSync(p);
 
@@ -190,11 +190,10 @@ export async function generateInsightPdf(reportId: string): Promise<Buffer> {
         doc.fillColor(BODY);
         doc.moveDown(0.6);
 
-        const description = (ins as any).description as string | undefined;
-        if (description) {
+        if (ins.description) {
           reg(doc);
           doc.fontSize(10.5).fillColor(BODY)
-            .text(description, MARGIN, doc.y, { width: CW, lineGap: 3 });
+            .text(ins.description, MARGIN, doc.y, { width: CW, lineGap: 3 });
           doc.moveDown(0.55);
         }
 

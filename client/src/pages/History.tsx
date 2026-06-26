@@ -551,20 +551,16 @@ function EventDetailModal({
             <div className="rounded-xl border border-accent/30 bg-accent/5 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Lightbulb className="h-4 w-4 text-accent" />
-                <span className="text-sm font-semibold text-accent uppercase tracking-wide">Health Insight</span>
-                <span
-                  className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium"
-                  style={
-                    insight.confidence === 'high'     ? { background: '#102a45', color: '#ffffff' }
-                    : insight.confidence === 'moderate' ? { background: '#244a73', color: '#ffffff' }
-                    : { background: '#d6e6f5', color: '#102a45' }
-                  }
-                >
-                  {insight.confidence === 'high' ? 'Strong Pattern' : insight.confidence === 'moderate' ? 'Possible Pattern' : 'Weak Pattern'}
-                </span>
+                <span className="text-sm font-semibold text-accent uppercase tracking-wide">Health Intelligence Insight</span>
               </div>
+              <p
+                className="text-xs italic mb-1"
+                style={{ color: insight.confidence === 'high' ? '#9b2c2c' : insight.confidence === 'moderate' ? '#9c4221' : '#276749' }}
+              >
+                {insight.confidence === 'high' ? 'Confidence: Strong pattern' : insight.confidence === 'moderate' ? 'Confidence: Possible pattern' : 'Confidence: Weak signal'}
+              </p>
               <p className="text-base font-medium text-gray-900 mb-1">{insight.title}</p>
-              <p className="text-sm text-gray-600 leading-relaxed">{insight.suggestedDiscussion}</p>
+              {insight.description && <p className="text-sm text-gray-600 leading-relaxed">{insight.description}</p>}
               {insight.supportingEvidence.length > 0 && (
                 <div className="mt-3 space-y-1.5">
                   {insight.supportingEvidence.slice(0, 2).map((ev, i) => (
