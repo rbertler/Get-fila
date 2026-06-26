@@ -745,7 +745,7 @@ export function HealthIntelligence() {
           <p className="text-sm text-gray-500">Choose the type of analysis to run.</p>
           <div className="flex flex-col gap-3 mt-1">
             <button
-              className="text-left rounded-lg border p-4 hover:border-primary hover:bg-primary/5 transition-colors"
+              className="text-left rounded-lg border bg-white p-4 hover:border-primary hover:bg-primary/5 transition-colors"
               onClick={() => { setAnalysisTypeDialogOpen(false); handleGenerate(); }}
             >
               <div className="flex items-center gap-2 font-semibold text-sm text-gray-900 mb-1">
@@ -754,7 +754,7 @@ export function HealthIntelligence() {
               <p className="text-xs text-gray-500">Analyze all your health data to surface patterns and insights across every category.</p>
             </button>
             <button
-              className="text-left rounded-lg border p-4 hover:border-primary hover:bg-primary/5 transition-colors"
+              className="text-left rounded-lg border bg-white p-4 hover:border-primary hover:bg-primary/5 transition-colors"
               onClick={() => { setAnalysisTypeDialogOpen(false); setFocusedDialogOpen(true); }}
             >
               <div className="flex items-center gap-2 font-semibold text-sm text-gray-900 mb-1">
@@ -763,7 +763,7 @@ export function HealthIntelligence() {
               <p className="text-xs text-gray-500">Focus on a specific condition, time range, or category for a targeted report.</p>
             </button>
             <button
-              className="text-left rounded-lg border p-4 hover:border-primary hover:bg-primary/5 transition-colors"
+              className="text-left rounded-lg border bg-white p-4 hover:border-primary hover:bg-primary/5 transition-colors"
               onClick={() => { setAnalysisTypeDialogOpen(false); setThematicDialogOpen(true); }}
             >
               <div className="flex items-center gap-2 font-semibold text-sm text-gray-900 mb-1">
