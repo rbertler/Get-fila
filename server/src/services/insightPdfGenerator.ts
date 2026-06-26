@@ -181,8 +181,9 @@ export async function generateInsightPdf(reportId: string): Promise<Buffer> {
           .text(ins.title, MARGIN, doc.y, { width: CW });
         doc.moveDown(0.3);
 
+        const confColor = ins.confidence === 'high' ? '#9b2c2c' : ins.confidence === 'moderate' ? '#9c4221' : '#276749';
         italic(doc);
-        doc.fontSize(9).fillColor(CONF)
+        doc.fontSize(9).fillColor(confColor)
           .text('Confidence: ' + (
             ins.confidence === 'high'     ? 'Strong pattern'   :
             ins.confidence === 'moderate' ? 'Possible pattern' : 'Weak signal'

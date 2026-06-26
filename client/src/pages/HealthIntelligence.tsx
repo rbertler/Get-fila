@@ -12,16 +12,16 @@ import { EmptyState } from '@/components/EmptyState';
 import { toast } from '@/hooks/useToast';
 import { format } from 'date-fns';
 
-const CONFIDENCE_VARIANTS: Record<InsightItem['confidence'], 'strongPattern' | 'possiblePattern' | 'weakPattern'> = {
-  high:     'strongPattern',
-  moderate: 'possiblePattern',
-  low:      'weakPattern',
+const CONFIDENCE_COLORS: Record<InsightItem['confidence'], string> = {
+  high:     '#9b2c2c',
+  moderate: '#9c4221',
+  low:      '#276749',
 };
 
 const CONFIDENCE_LABELS: Record<InsightItem['confidence'], string> = {
-  high:     'Strong Pattern',
-  moderate: 'Possible Pattern',
-  low:      'Weak Pattern',
+  high:     'Confidence: Strong pattern',
+  moderate: 'Confidence: Possible pattern',
+  low:      'Confidence: Weak signal',
 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -56,11 +56,9 @@ function ReportCard({ report }: { report: HealthInsightReport }) {
                   <Lightbulb className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900 leading-snug">{insight.title}</p>
-                    <div className="mt-1">
-                      <Badge variant={CONFIDENCE_VARIANTS[insight.confidence]}>
-                        {CONFIDENCE_LABELS[insight.confidence]}
-                      </Badge>
-                    </div>
+                    <p className="text-xs italic mt-1" style={{ color: CONFIDENCE_COLORS[insight.confidence] }}>
+                      {CONFIDENCE_LABELS[insight.confidence]}
+                    </p>
                   </div>
                 </div>
 
